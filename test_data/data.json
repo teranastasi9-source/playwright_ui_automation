@@ -1,0 +1,22 @@
+[
+  {
+    "username": "practice",
+    "password": "SuperSecretPassword!",
+    "expected_message": "You logged into a secure area!"
+  },
+  {
+    "username": "practice",
+    "password": "WrongPassword",
+    "expected_message": "Your password is invalid!"
+  },
+  {
+    "username": "wrongUser",
+    "password": "SuperSecretPassword!",
+    "expected_message": "Your password is invalid!"
+  },
+  {
+    "username": "",
+    "password": "",
+    "expected_message": "Your username is invalid!"
+  }
+]

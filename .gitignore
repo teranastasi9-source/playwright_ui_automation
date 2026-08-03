@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.pyc
+
+# pytest
+.pytest_cache/
+
+# ruff
+.ruff_cache/
+
+# Downloaded/generated test artifacts (not part of the committed report)
+test_data/test.zip
+test_data/some-file*.txt
+
+# pytest-playwright's own --output dir (--tracing/--video/--screenshot debug flags) -
+# not the same as (and not to be confused with) the committed reports/test-results/
+/test-results/
+
+# Virtual environment
+venv/
+.venv/
+
+# IDE
+.idea/
+.vscode/
+
+# Windows folder metadata
+desktop.ini

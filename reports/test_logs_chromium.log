@@ -1,0 +1,152 @@
+INFO     test_ajax:test_ajax.py:11 Given the AJAX dropdown demo page
+	When I select 'Fruits' in the category dropdown
+	Then the backend returns the matching subcategories
+
+INFO     test_cookies:test_cookies.py:12 Given a page with cookies set
+	When I clear all cookies
+	Then no cookies remain for the context
+
+INFO     test_find_locators_css_xpath:test_find_locators_css_xpath.py:17 Given the demo login page
+	When I locate the email field via a CSS id selector
+	Then the value I typed is present before submitting
+
+INFO     test_find_locators_css_xpath:test_find_locators_css_xpath.py:41 Given the OrangeHRM login page
+	When I log in using CSS attribute selectors
+	Then I land on the dashboard
+
+INFO     test_find_locators_css_xpath:test_find_locators_css_xpath.py:67 Given the OrangeHRM login page
+	When I navigate to 'Forgot your password?' via XPath locators
+	Then the password-reset page and its fields are located correctly
+
+INFO     test_get_all_text_and_links_from_page:test_get_all_text_and_links_from_page.py:12 Given the demo page
+	When I collect every <b> element on the page
+	Then at least one text element is found
+
+INFO     test_get_all_text_and_links_from_page:test_get_all_text_and_links_from_page.py:31 Given the demo page
+	When I collect every <a> element on the page
+	Then at least one link with a non-empty href is found
+
+INFO     test_google:test_google.py:13 Given google.com
+	When the page loads
+	Then the title contains 'Google'
+
+INFO     test_google:test_google.py:28 Given the Google homepage
+	When I search for 'Playwright Python'
+	Then the results page title contains 'Playwright'
+
+INFO     test_iframe:test_iframe.py:22 Given a page with an editable area inside an iframe
+	When I type text into it
+	Then the frame's content reflects the new text
+
+INFO     test_job_titles:test_job_titles.py:65 Given the OrangeHRM Job Titles page
+	When I create a uniquely-named Job Title
+	Then it appears in the list with the correct data, and can be deleted again
+
+INFO     test_job_titles:test_job_titles.py:87 Given a mocked Job Titles API response
+	When I load the Job Titles page
+	Then it renders exactly the mocked rows, not the real shared demo data
+
+INFO     test_job_titles:test_job_titles.py:117 Given a mocked 500 error from the Job Titles API
+	When I load the Job Titles page
+	Then the page itself still renders instead of crashing
+
+INFO     test_job_titles:test_job_titles.py:154 Given an authenticated API session
+	When I create a Job Title via a direct API call
+	Then it appears correctly in the OrangeHRM UI
+
+INFO     test_login:test_login.py:41 Given valid credentials
+	When I log in
+	Then I am redirected to the secure area
+
+INFO     test_login:test_login.py:65 Given the login page
+	When I log in with an invalid username and valid password
+	Then an error message is shown and I remain on the login page
+
+INFO     test_login:test_login.py:87 Given the login page
+	When I log in with a valid username and invalid password
+	Then an error message is shown and I remain on the login page
+
+INFO     test_login:test_login.py:110 Given the login page
+	When I log in with username='practice'
+	Then the message 'You logged into a secure area!' is displayed
+
+INFO     test_mouse_actions:test_mouse_actions.py:12 Given the demo page
+	When I hover over 'SwitchTo' and click 'Frames'
+	Then the dropdown opens and double-click also works
+
+INFO     test_new_tab_handling:test_new_tab_handling.py:12 Given a page with a link that opens a new tab
+	When I click it and then close the new tab
+	Then only the original tab remains
+
+INFO     test_select_alertbox:test_select_alertbox.py:20 Given the Alerts demo page
+	When I trigger a plain alert box
+	Then its message matches the expected text
+
+INFO     test_select_alertbox:test_select_alertbox.py:42 Given the Alerts demo page
+	When I trigger a confirm box
+	Then its message matches the expected text
+
+INFO     test_select_alertbox:test_select_alertbox.py:69 Given the Alerts demo page
+	When I trigger the prompt box and answer it
+	Then its message matches the expected text
+
+INFO     test_select_dropdown_radio_checkbox:test_select_dropdown_radio_checkbox.py:12 Given the Register demo page
+	When I select 'Python' in the Skills dropdown
+	Then the dropdown value changes from empty to 'Python'
+
+INFO     test_select_dropdown_radio_checkbox:test_select_dropdown_radio_checkbox.py:35 Given the Register demo page
+	When I select the 'FeMale' radio button
+	Then it becomes checked and 'Male' stays unchecked
+
+INFO     test_select_dropdown_radio_checkbox:test_select_dropdown_radio_checkbox.py:61 Given the Register demo page
+	When I check the 'Cricket' checkbox
+	Then it becomes checked
+
+INFO     test_session_reuse:test_session_reuse.py:23 Given a session captured once by the orangehrm_admin_page fixture
+	When I navigate straight to the dashboard
+	Then it loads without redirecting to login
+
+INFO     test_session_reuse:test_session_reuse.py:37 Given a session captured once by the orangehrm_admin_page fixture
+	When I navigate straight to the Job Titles page
+	Then it loads without redirecting to login
+
+INFO     test_upload_and_download_files:test_upload_and_download_files.py:17 Given the file upload demo page
+	When I select a local file via the file input
+	Then the browser registers the correct file name
+
+INFO     test_upload_and_download_files:test_upload_and_download_files.py:43 Given the file download demo page
+	When I click the 'some-file.txt' download link
+	Then the file is saved to disk with content
+
+INFO     test_video_and_screenshot:test_video_and_screenshot.py:23 Given the Alerts demo page
+	When I take a viewport and a full-page screenshot
+	Then both image files exist on disk with content
+
+INFO     test_video_and_screenshot:test_video_and_screenshot.py:53 Given a browser context with video recording enabled
+	When I log in on OrangeHRM
+	Then a video file is saved to disk with content
+
+INFO     test_webtable:test_webtable.py:13 Given the web table demo page
+	When I read the customers table
+	Then its shape and content match the expected data
+
+INFO     test_api_requests:test_api_requests.py:26 Given the reqres.in fake REST API
+	When I request page 2 of users
+	Then I receive the expected user records within the response-time budget
+
+INFO     test_api_requests:test_api_requests.py:63 Given the reqres.in fake REST API
+	When I POST a new user
+	Then the API responds with 201 Created within the response-time budget
+
+INFO     test_login:test_login.py:110 Given the login page
+	When I log in with username='practice'
+	Then the message 'Your password is invalid!' is displayed
+
+INFO     test_login:test_login.py:110 Given the login page
+	When I log in with username='wrongUser'
+	Then the message 'Your password is invalid!' is displayed
+
+INFO     test_login:test_login.py:110 Given the login page
+	When I log in with username=''
+	Then the message 'Your username is invalid!' is displayed
+

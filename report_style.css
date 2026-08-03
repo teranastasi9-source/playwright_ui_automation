@@ -1,0 +1,175 @@
+/* Custom theme for the pytest-html report - applied on top of the plugin's
+   default styles via `--css` in pytest.ini. Kept separate from any project
+   Python code since it only affects report presentation. */
+
+:root {
+  --accent: #6366f1;
+  --accent-dark: #4f46e5;
+  --bg: #f8fafc;
+  --card-bg: #ffffff;
+  --border: #e2e8f0;
+  --text: #1e293b;
+  --text-muted: #64748b;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+}
+
+h1#title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text);
+  border-bottom: 3px solid var(--accent);
+  padding-bottom: 12px;
+  margin-bottom: 4px;
+}
+
+body > p {
+  color: var(--text-muted);
+  font-size: 13px;
+  margin-top: 0;
+}
+
+body > p a {
+  color: var(--accent-dark);
+}
+
+#environment-header h2 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+#environment {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  margin-bottom: 24px;
+  width: 100%;
+}
+
+#environment td {
+  padding: 8px 14px;
+  border: none;
+  border-bottom: 1px solid var(--border);
+}
+
+#environment tr:last-child td {
+  border-bottom: none;
+}
+
+#environment tr:nth-child(odd) {
+  background-color: #f8fafc;
+}
+
+.summary {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+#results-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+#results-table th {
+  background: #f1f5f9;
+  color: var(--text);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  padding: 12px 14px;
+  border-bottom: 2px solid var(--border);
+}
+
+#results-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+
+/* Status pill badges instead of plain colored text */
+span.passed, .passed .col-result,
+span.failed, .failed .col-result,
+span.skipped, .skipped .col-result,
+span.error, .error .col-result,
+span.xfailed, .xfailed .col-result,
+span.xpassed, .xpassed .col-result,
+span.rerun, .rerun .col-result {
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  display: inline-block;
+}
+
+span.passed, .passed .col-result {
+  color: #166534;
+  background: #dcfce7;
+}
+
+span.failed, .failed .col-result,
+span.error, .error .col-result,
+span.xpassed, .xpassed .col-result {
+  color: #991b1b;
+  background: #fee2e2;
+}
+
+span.skipped, .skipped .col-result,
+span.xfailed, .xfailed .col-result,
+span.rerun, .rerun .col-result {
+  color: #92400e;
+  background: #fef3c7;
+}
+
+.logwrapper {
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #0f172a;
+}
+
+.logwrapper .log {
+  font-family: "SF Mono", Monaco, Consolas, "Courier New", monospace;
+  font-size: 12px;
+  border-radius: 8px;
+  background: #0f172a;
+  color: #e2e8f0;
+  border: none;
+}
+
+.controls, .filters, .collapse {
+  font-size: 13px;
+}
+
+.filters button, .collapse button {
+  color: var(--accent-dark);
+}
+
+.media {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.media-container__viewport img {
+  border-radius: 4px;
+}

@@ -1,0 +1,90 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Full suite once a day, independent of anyone pushing - catches drift caused
+    # by the third-party demo sites this project depends on, not just code changes.
+    - cron: "0 3 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  lint:
+    name: Lint (ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+      - run: pip install -r requirements-dev.txt
+      - run: ruff check .
+
+  smoke:
+    name: Smoke tests (push / PR)
+    needs: lint
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+      - run: pip install -r requirements.txt
+      - run: playwright install --with-deps chromium
+      - name: Run smoke tests
+        run: |
+          # test_search_results_title_contains_playwright is deliberately excluded here:
+          # Google actively bot-checks/CAPTCHAs automated searches from datacenter IP
+          # ranges, which is what GitHub-hosted runners use. It's stable from a normal
+          # dev machine but not reliable from CI specifically - see the
+          # triage-test-failure skill for the same pattern applied to other sites.
+          pytest tests -m smoke -k "not test_search_results_title_contains_playwright" -v
+      - name: Upload report (always, so failures are inspectable)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-test-report
+          path: reports/
+          retention-days: 14
+
+  full-suite:
+    name: Full suite (${{ matrix.browser }}) - scheduled / manual
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+      - run: pip install -r requirements.txt
+      - run: playwright install --with-deps ${{ matrix.browser }}
+      - name: Run the full suite
+        run: |
+          # test_search_results_title_contains_playwright: excluded on every browser - see the
+          # smoke job above, same root cause (Google bot-checks GitHub's datacenter IPs,
+          # regardless of which browser engine is asking - not a per-browser issue, so it
+          # isn't handled by the @pytest.mark.no_browsers marker below).
+          #
+          # The expandtesting.com login tests are NOT excluded here: they carry
+          # @pytest.mark.no_browsers("firefox", "webkit", reason=...) and are skipped
+          # automatically on those engines by conftest.py's pytest_runtest_setup - see
+          # "Cross-browser testing" in README.md for the verified root cause.
+          pytest tests --browser=${{ matrix.browser }} -k "not test_search_results_title_contains_playwright" -v
+      - name: Upload report (always, so failures are inspectable)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-test-report-${{ matrix.browser }}
+          path: reports/
+          retention-days: 14
