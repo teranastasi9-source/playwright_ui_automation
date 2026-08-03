@@ -57,6 +57,8 @@ jobs:
     name: Full suite (${{ matrix.browser }}) - scheduled / manual
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
     strategy:
       fail-fast: false
       matrix:
@@ -88,3 +90,28 @@ jobs:
           name: full-test-report-${{ matrix.browser }}
           path: reports/
           retention-days: 14
+      - name: Open an issue on nightly failure
+        # Only for the scheduled run, not workflow_dispatch - a manual run is
+        # already being watched live, it doesn't need a ticket too. Not a
+        # verdict on whether this is a real regression or an external-site
+        # flake (see triage-test-failure skill) - just a "don't let this go
+        # unnoticed" safety net for the one run nobody's actively watching.
+        if: failure() && github.event_name == 'schedule'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Nightly full-suite failed on ${{ matrix.browser }} (run #${context.runNumber})`,
+              body: [
+                `The scheduled nightly full-suite run failed on **${{ matrix.browser }}**.`,
+                ``,
+                `Run: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+                ``,
+                `Not yet triaged - this could be a real regression or one of this project's`,
+                `known external-site flakiness patterns. Use the \`triage-test-failure\` skill`,
+                `(re-run in isolation, verify the external state directly) before assuming either way.`
+              ].join("\n"),
+              labels: ["bug", "ci-failure"]
+            })

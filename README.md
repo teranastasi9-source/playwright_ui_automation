@@ -257,7 +257,10 @@ documented here as a local, opt-in speed-up.
 
 CI runs the full suite against **Chromium, Firefox, and WebKit** (a matrix job, scheduled
 nightly and available on demand via `workflow_dispatch` - see `full-suite` in
-`.github/workflows/tests.yml`).
+`.github/workflows/tests.yml`). If the nightly run fails, a GitHub Issue is opened
+automatically (not for push/PR/manual runs - those are already being watched live) - a
+"don't let this go unnoticed" safety net, not a verdict on whether it's a real regression or
+one of the known external-site flakes below.
 
 ![GitHub Actions: Tests workflow run passing](docs/github_actions.png)
 
