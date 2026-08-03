@@ -51,6 +51,7 @@ playwright_ui_automation/
   pyproject.toml                     - ruff config
   docs/architecture.png            - diagram above (tests -> fixtures -> Page Objects -> targets, + CI)
   docs/report_screenshot.png       - report screenshot embedded below, for a no-clone preview
+  docs/github_actions.png          - CI run screenshot, embedded in "Cross-browser testing" below
   test_data/                          - JSON/CSV fixtures, sample upload file, local iframe fixture
   reports/                             - committed HTML report + log per browser, + screenshots/video from the last run
   tests/
@@ -256,7 +257,11 @@ documented here as a local, opt-in speed-up.
 
 CI runs the full suite against **Chromium, Firefox, and WebKit** (a matrix job, scheduled
 nightly and available on demand via `workflow_dispatch` - see `full-suite` in
-`.github/workflows/tests.yml`). Locally:
+`.github/workflows/tests.yml`).
+
+![GitHub Actions: Tests workflow run passing](docs/github_actions.png)
+
+Locally:
 
 ```bash
 pytest tests --browser=firefox
