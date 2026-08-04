@@ -31,7 +31,7 @@ def test_upload_file(page: Page):
     file_to_be_uploaded = TEST_DATA_DIR / "file_to_be_uploaded.txt"
 
     # Find "Browse..." button via XPath
-    browse_button = page.wait_for_selector('//input[@id="input-4"]')
+    browse_button = page.locator('//input[@id="input-4"]')
 
     # Upload the file
     browse_button.set_input_files(str(file_to_be_uploaded))

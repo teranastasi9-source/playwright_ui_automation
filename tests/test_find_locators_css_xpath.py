@@ -26,16 +26,16 @@ def test_css_locators_via_id(page: Page):
     dismiss_cookie_consent_if_present(page)
 
     # Define CSS locator for email field via id (#email)
-    email_txt_box = page.wait_for_selector('#email')
+    email_txt_box = page.locator('#email')
 
     # Enter 'test@gmail.com' email into email locator
     email_txt_box.type('test@gmail.com')
 
     # Verify the value was actually entered before submitting
-    assert email_txt_box.input_value() == 'test@gmail.com'
+    expect(email_txt_box).to_have_value('test@gmail.com')
 
     # Define CSS locator for login button via id (#enterimg) and click it
-    button_login = page.wait_for_selector('#enterimg')
+    button_login = page.locator('#enterimg')
     button_login.click()
 
 
@@ -49,15 +49,15 @@ def test_css_locators_via_attribute(page: Page):
     page.wait_for_load_state("load")
 
     # Define CSS locator for username via attribute and type it in
-    username = page.wait_for_selector('input[name="username"]')
+    username = page.locator('input[name="username"]')
     username.type(ORANGEHRM_ADMIN_USERNAME)
 
     # Define CSS locator for password via attribute and type it in
-    password = page.wait_for_selector('input[type="password"]')
+    password = page.locator('input[type="password"]')
     password.type(ORANGEHRM_ADMIN_PASSWORD)
 
     # Define CSS locator for the submit button via attribute and click it
-    login_button = page.wait_for_selector('button[type="submit"]')
+    login_button = page.locator('button[type="submit"]')
     login_button.click()
 
     # Verify the login actually succeeded and landed on the dashboard
@@ -83,7 +83,7 @@ def test_css_locators_via_xpath(page: Page):
     # to lowercase both sides before comparing - same fix applied to the two locators below,
     # which showed the identical flip-flopping behavior for "username".
     lower = "translate(%s, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')"
-    forgot_your_password_button = page.wait_for_selector(
+    forgot_your_password_button = page.locator(
         f"//p[contains({lower % '.'}, 'forgot your password')]"
     )
     forgot_your_password_button.click()

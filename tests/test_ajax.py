@@ -15,7 +15,7 @@ def test_selecting_category_returns_matching_subcategories(page: Page):
     page.wait_for_load_state("load")
 
     # Find selector for 'Category' dropdown list (colors)
-    category_dropdown = page.wait_for_selector('//select[@id="s1"]')
+    category_dropdown = page.locator('//select[@id="s1"]')
 
     # Select "Fruits" (value=1) and wait for the AJAX call it triggers,
     # then verify the backend actually returned the expected subcategories

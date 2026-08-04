@@ -21,10 +21,10 @@ def test_hover_opens_dropdown_and_dblclick_works(page: Page):
 
     # Find "SwitchTo" button location and call hover() method
     # (keep a cursor on "SwitchTo" element -> dropdown list pops up)
-    page.wait_for_selector('//a[text()="SwitchTo"]').hover()
+    switch_to_link = page.locator('//a[text()="SwitchTo"]')
+    switch_to_link.hover()
 
     # Verify the hover actually opened the "Frames" dropdown entry
-    # (locator(), not wait_for_selector(), because expect() requires a Locator, not an ElementHandle)
     frames_link = page.locator('//a[text()="Frames"]')
     expect(frames_link).to_be_visible()
 
@@ -32,4 +32,4 @@ def test_hover_opens_dropdown_and_dblclick_works(page: Page):
     frames_link.click()
 
     # Double-click on element (no proper location as example)
-    page.wait_for_selector('//a[text()="SwitchTo"]').dblclick()
+    switch_to_link.dblclick()

@@ -20,11 +20,11 @@ def test_get_all_text_from_page(page: Page):
     dismiss_cookie_consent_if_present(page)
 
     # Store multiple text elements (usually marked as 'b', 'label', 'p', etc.)
-    all_text = page.query_selector_all('b')
-    assert len(all_text) > 0
+    all_text = page.locator('b')
+    assert all_text.count() > 0
 
     # Read each text from web element
-    for text in all_text:
+    for text in all_text.all():
         print(text.text_content())
 
 
@@ -40,16 +40,16 @@ def test_get_all_links_from_page(page: Page):
     dismiss_cookie_consent_if_present(page)
 
     # Links are usually marked as 'a' (anchor) tag
-    all_links = page.query_selector_all('a')
-    assert len(all_links) > 0
+    all_links = page.locator('a')
+    assert all_links.count() > 0
 
     try:
-        page.query_selector('d//[@aaa="bbb"]')  # raise an error for testing purpose
+        page.locator('d//[@aaa="bbb"]').count()  # raise an error for testing purpose
     except Exception as e:
         print(str(e))  # Unsupported token "@aaa ...
     finally:
         print("Will be executed anyway")
 
     # Read each link with href attribute
-    hrefs = [link.get_attribute('href') for link in all_links]
+    hrefs = [link.get_attribute('href') for link in all_links.all()]
     assert any(href for href in hrefs), "Expected at least one link with a non-empty href"

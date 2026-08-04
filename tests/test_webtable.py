@@ -18,20 +18,20 @@ def test_webtable_content_matches_expected_data(page: Page):
     page.wait_for_load_state("load")
 
     # Find selector for whole table
-    table = page.wait_for_selector('//table[@id="customers"]')
+    table = page.locator('//table[@id="customers"]')
 
     # Find number of rows of that table via 'tr' (table rows)
-    all_rows = table.query_selector_all('tr')
-    assert len(all_rows) == 7
+    all_rows = table.locator('tr')
+    assert all_rows.count() == 7
 
     # Find number of cells of that table via 'td' (table data)
-    all_columns = table.query_selector_all('td')
-    assert len(all_columns) == 18
+    all_columns = table.locator('td')
+    assert all_columns.count() == 18
 
     table_data = []
-    for row in all_rows:
-        row_data = row.query_selector_all('td')
-        for data in row_data:
+    for row in all_rows.all():
+        row_data = row.locator('td')
+        for data in row_data.all():
             table_data.append(data.text_content())
 
     # Verify the actual table content, not just its shape

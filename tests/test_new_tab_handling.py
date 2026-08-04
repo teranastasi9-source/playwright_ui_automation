@@ -22,7 +22,7 @@ def test_new_tab_closes_without_affecting_original_tab(page: Page):
 
     # Find "Click" button via XPath and click it -> new tab will be opened
     with context.expect_page() as new_page_info:
-        page.wait_for_selector('//a[@target="_blank"]/button').click()
+        page.locator('//a[@target="_blank"]/button').click()
     new_page = new_page_info.value
     new_page.wait_for_load_state("load")
 
