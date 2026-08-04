@@ -44,6 +44,8 @@ Purpose: Python-based UI test automation framework built with [Playwright](https
 playwright_ui_automation/
   .github/workflows/tests.yml   - CI: lint + smoke on push/PR, full suite nightly/manual
   .claude/skills/                - project-scoped Claude Code skills (see below)
+  Dockerfile                       - optional containerized test run (see "Run tests in Docker")
+  .dockerignore                     - keeps .git/caches out of the Docker build context
   pytest.ini                       - pytest config (HTML report, live logging, markers)
   report_style.css               - custom theme applied to the pytest-html report
   requirements.txt                 - runtime dependencies
