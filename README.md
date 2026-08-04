@@ -260,9 +260,14 @@ After running, you should see:
   - Screenshots and a video recording saved under `reports/test-results/` (from `test_video_and_screenshot.py`)
   - Live log output in the console for each test's Given/When/Then narration (`log_cli` in `pytest.ini`)
 
-Recent runs are committed at `reports/report_chromium.html`, `reports/report_firefox.html`, and
-`reports/report_webkit.html` so you can see results for all three engines without running
-anything - open any of them directly in a browser.
+**Live report:** the chromium smoke report is redeployed to GitHub Pages after every push to
+`main` - see it at
+[teranastasi9-source.github.io/playwright_ui_automation](https://teranastasi9-source.github.io/playwright_ui_automation/)
+without cloning anything.
+
+Recent runs are also committed at `reports/report_chromium.html`, `reports/report_firefox.html`,
+and `reports/report_webkit.html` so you can see results for all three engines - open any of them
+directly in a browser.
 
 ![HTML test report](docs/report_screenshot.png)
 

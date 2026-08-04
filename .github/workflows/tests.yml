@@ -53,6 +53,41 @@ jobs:
           path: reports/
           retention-days: 14
 
+  pages:
+    name: Deploy latest report to GitHub Pages
+    needs: smoke
+    # Only on an actual push to main, not PRs - Pages should reflect main's state, not a
+    # preview branch. Requires Pages enabled once in repo Settings > Pages > Source:
+    # "GitHub Actions" (a one-time manual step, not something a workflow file can set).
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    concurrency:
+      group: "pages"
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: smoke-test-report
+          path: reports/
+      - name: Stage the chromium report as the Pages site root
+        # report_chromium.html is fully self-contained (pytest.ini's --self-contained-html
+        # inlines CSS/JS), so it can be served as-is with no other files alongside it.
+        run: |
+          mkdir -p _site
+          cp reports/report_chromium.html _site/index.html
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
   full-suite:
     name: Full suite (${{ matrix.browser }}) - scheduled / manual
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
