@@ -159,11 +159,11 @@ The other three aren't for browsing subsets - each drives its own behavior inste
 
 ## Flaky test policy
 
-[pytest-rerunfailures](https://github.com/pytest-dev/pytest-rerunfailures) is installed, but
-reruns are **opt-in per test**, not a blanket `--reruns` applied to the whole suite - a global
-retry would just as easily hide a real regression as a real flake. A test only gets
-`@pytest.mark.flaky(reruns=N, reruns_delay=M)` once it has a *specific, understood* external
-cause for occasional failure, documented in a comment next to the marker.
+[pytest-rerunfailures](https://github.com/pytest-dev/pytest-rerunfailures) is installed. Locally
+and in the `smoke` CI job (the fast, strict pre-merge gate), reruns are **opt-in per test only**
+- a global retry there would just as easily hide a real regression as a real flake. A test only
+gets `@pytest.mark.flaky(reruns=N, reruns_delay=M)` once it has a *specific, understood*
+external cause for occasional failure, documented in a comment next to the marker.
 
 Currently applied to one test:
 - `test_download_file` (`test_upload_and_download_files.py`) - `the-internet.herokuapp.com`
@@ -176,6 +176,16 @@ Not every external-flakiness pattern in this suite gets this treatment - see
 demo data) and why a rerun wouldn't actually fix them: a CAPTCHA or another visitor's edited
 data won't go away just because the test tried again, so those are handled at the root
 (exclusion, self-contained data, or mocking) instead.
+
+The `full-suite` CI job (nightly/manual only) is the one exception to "no blanket retry": it
+runs with `--reruns 1 --reruns-delay 3` applied to the whole job (see `.github/workflows/tests.yml`).
+That job's entire purpose is tolerating drift from many volatile third-party demo sites at
+once (per its schedule trigger's own comment), so a single job-wide rerun for an ordinary,
+one-off site blip is consistent with what it's already for - verified 2026-08-04:
+`test_mouse_actions` failed there once on Chromium, passed immediately on a plain local
+re-run, and never reproduced again. A test's own `@pytest.mark.flaky(reruns=N)` still wins
+over this job-wide default rather than stacking with it (pytest-rerunfailures' marker
+precedence, not `append` mode).
 
 ## Linting
 
