@@ -53,9 +53,35 @@ jobs:
           path: reports/
           retention-days: 14
 
+  full-chromium:
+    name: Full suite (chromium) - push to main, feeds the live Pages report
+    needs: lint
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+      - run: pip install -r requirements.txt
+      - run: playwright install --with-deps chromium
+      - name: Run the full suite (chromium)
+        run: |
+          # test_search_results_title_contains_playwright excluded - same CI-only Google
+          # bot-check reason as the smoke job above.
+          pytest tests -k "not test_search_results_title_contains_playwright" -v
+      - name: Upload report (always, so failures are inspectable)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-chromium-report
+          path: reports/
+          retention-days: 14
+
   pages:
     name: Deploy latest report to GitHub Pages
-    needs: smoke
+    needs: full-chromium
     # Only on an actual push to main, not PRs - Pages should reflect main's state, not a
     # preview branch. Requires Pages enabled once in repo Settings > Pages > Source:
     # "GitHub Actions" (a one-time manual step, not something a workflow file can set).
@@ -73,7 +99,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: smoke-test-report
+          name: full-chromium-report
           path: reports/
       - name: Stage the chromium report as the Pages site root
         # report_chromium.html is fully self-contained (pytest.ini's --self-contained-html

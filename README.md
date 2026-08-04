@@ -260,8 +260,8 @@ After running, you should see:
   - Screenshots and a video recording saved under `reports/test-results/` (from `test_video_and_screenshot.py`)
   - Live log output in the console for each test's Given/When/Then narration (`log_cli` in `pytest.ini`)
 
-**Live report:** the chromium smoke report is redeployed to GitHub Pages after every push to
-`main` - see it at
+**Live report:** the full suite's chromium report (all 38 tests) is redeployed to GitHub Pages
+after every push to `main` - see it at
 [teranastasi9-source.github.io/playwright_ui_automation](https://teranastasi9-source.github.io/playwright_ui_automation/)
 without cloning anything.
 
