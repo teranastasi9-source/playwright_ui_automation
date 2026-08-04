@@ -47,10 +47,11 @@ playwright_ui_automation/
   .claude/skills/                - project-scoped Claude Code skills (see below)
   Dockerfile                       - optional containerized test run (see "Run tests in Docker")
   .dockerignore                     - keeps .git/caches out of the Docker build context
+  .pre-commit-config.yaml            - runs ruff automatically before each commit (see "Linting")
   pytest.ini                       - pytest config (HTML report, live logging, markers)
   report_style.css               - custom theme applied to the pytest-html report
   requirements.txt                 - runtime dependencies
-  requirements-dev.txt              - + ruff, for linting
+  requirements-dev.txt              - + ruff and pre-commit, for linting
   pyproject.toml                     - ruff config
   docs/architecture.png            - diagram above (tests -> fixtures -> Page Objects -> targets, + CI)
   docs/report_screenshot.png       - report screenshot embedded below, for a no-clone preview
@@ -225,6 +226,17 @@ pip install -r requirements-dev.txt
 ruff check .          # report issues
 ruff check . --fix    # auto-fix what can be auto-fixed (import sorting, unused imports, ...)
 ```
+
+A `.pre-commit-config.yaml` is included so the same check can run automatically before every
+commit, instead of relying on remembering to run it (or waiting for CI to catch it):
+
+```bash
+pip install -r requirements-dev.txt
+pre-commit install    # one-time, per clone - wires the git hook
+```
+
+From then on, `git commit` runs `ruff check` on the staged files first and blocks the commit if
+it fails - the same rule CI enforces, just caught locally before it's pushed.
 
 ## Working with Claude Code
 
