@@ -1,6 +1,7 @@
 # Playwright UI Test Automation
 
 [![Tests](https://github.com/teranastasi9-source/playwright_ui_automation/actions/workflows/tests.yml/badge.svg)](https://github.com/teranastasi9-source/playwright_ui_automation/actions/workflows/tests.yml)
+![Tests](https://img.shields.io/badge/tests-38-brightgreen)
 
 Purpose: Python-based UI test automation framework built with [Playwright](https://playwright.dev/python/) and [pytest](https://docs.pytest.org/). Portfolio demonstration of UI automation, Page Object Model, and pytest best practices.
 
