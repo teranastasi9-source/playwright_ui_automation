@@ -82,6 +82,12 @@ def test_job_title_create_and_delete(orangehrm_admin_page: Page) -> None:
     job_titles_page.delete_job_title(unique_title)
 
 
+@pytest.mark.flaky(reruns=1, reruns_delay=3)
+# Only the Job Titles API response is mocked below - the page navigation itself still hits the
+# real, shared OrangeHRM demo site, so it's subject to that site's own occasional slowness.
+# Verified 2026-08-04: this test timed out on Page.goto (30s) in CI, passed immediately on an
+# unmodified re-run of the same job - not a regression, an external-site blip (see
+# triage-test-failure skill).
 def test_job_titles_list_renders_mocked_api_response(orangehrm_admin_page: Page) -> None:
     """Verify the Job Titles list renders exactly the data returned by its API, using a fully mocked response."""
     logger.info("Given a mocked Job Titles API response\n\tWhen I load the Job Titles page"
@@ -107,6 +113,9 @@ def test_job_titles_list_renders_mocked_api_response(orangehrm_admin_page: Page)
     expect(orangehrm_admin_page.get_by_text("(2) Records Found")).to_be_visible()
 
 
+@pytest.mark.flaky(reruns=1, reruns_delay=3)
+# Same reason as test_job_titles_list_renders_mocked_api_response above - only the API response
+# is mocked, the page navigation still depends on the real, shared OrangeHRM demo site.
 def test_job_titles_list_handles_api_error(orangehrm_admin_page: Page) -> None:
     """
     Verify the page doesn't crash/hang when its data API fails. This is the

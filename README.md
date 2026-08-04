@@ -195,11 +195,17 @@ and in the `smoke` CI job (the fast, strict pre-merge gate), reruns are **opt-in
 gets `@pytest.mark.flaky(reruns=N, reruns_delay=M)` once it has a *specific, understood*
 external cause for occasional failure, documented in a comment next to the marker.
 
-Currently applied to one test:
+Currently applied to:
 - `test_download_file` (`test_upload_and_download_files.py`) - `the-internet.herokuapp.com`
   runs on a free Heroku dyno that can be slow to wake from idle. This already has an extended
   explicit timeout on the download link itself; the rerun is a second line of defense for the
   rarer case where the whole cold start outlasts even that.
+- `test_job_titles_list_renders_mocked_api_response` and `test_job_titles_list_handles_api_error`
+  (`test_job_titles.py`) - both mock the Job Titles *API response*, but still navigate to the
+  real, shared OrangeHRM demo site to load the page itself, so they're exposed to that site's
+  own occasional slowness regardless of the mock. Verified 2026-08-04: one of these timed out on
+  `Page.goto` in CI, then passed immediately on an unmodified re-run of the same job - an
+  external-site blip, not a regression (see the `triage-test-failure` skill).
 
 Not every external-flakiness pattern in this suite gets this treatment - see
 "Third-party demo sites used" below for the other patterns (bot detection, shared/mutable
