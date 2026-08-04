@@ -116,6 +116,26 @@ pytest tests/test_login.py::test_login_successful -v
 pytest tests
 ```
 
+## Run tests in Docker
+
+An alternative to the local setup above: the included `Dockerfile` is based on the official
+`mcr.microsoft.com/playwright/python` image, which ships with all three browser engines
+already installed, so there's no local Python/pip/`playwright install` setup needed at all.
+
+```bash
+docker build -t playwright-ui-automation .
+docker run --rm -v "$(pwd)/reports:/app/reports" playwright-ui-automation
+```
+
+The `-v` mount writes the HTML/log report back out to `reports/` on the host, so it's still
+inspectable after the container exits. Pass extra pytest arguments after the image name, e.g.
+`docker run --rm -v "$(pwd)/reports:/app/reports" playwright-ui-automation pytest tests -m smoke`.
+
+This is a local/manual convenience, not part of CI - the GitHub Actions workflow already runs
+on a consistent `ubuntu-latest` runner, so containerizing it wouldn't add anything there (and
+notably wouldn't fix the network-flakiness issues described in "Flaky test policy" below,
+since a container on the same runner still egresses through the same IP).
+
 ## Useful debugging flags
 
 These come from `pytest-playwright` itself, not anything custom in this project - handy when
