@@ -131,6 +131,12 @@ The `-v` mount writes the HTML/log report back out to `reports/` on the host, so
 inspectable after the container exits. Pass extra pytest arguments after the image name, e.g.
 `docker run --rm -v "$(pwd)/reports:/app/reports" playwright-ui-automation pytest tests -m smoke`.
 
+On Windows Git Bash specifically, prefix the command with `MSYS_NO_PATHCONV=1` (e.g.
+`MSYS_NO_PATHCONV=1 docker run --rm -v "$(pwd)/reports:/app/reports" ...`) - without it, Git
+Bash's automatic path translation silently mangles the `$(pwd)` mount so the container runs fine
+but the report never actually reaches the host (verified: the command exits 0 with no error, but
+the host file's timestamp doesn't change). PowerShell/cmd and macOS/Linux shells aren't affected.
+
 This is a local/manual convenience, not part of CI - the GitHub Actions workflow already runs
 on a consistent `ubuntu-latest` runner, so containerizing it wouldn't add anything there (and
 notably wouldn't fix the network-flakiness issues described in "Flaky test policy" below,
