@@ -1,12 +1,14 @@
 import logging
 
-from config import AUTOMATIONTESTING_REGISTER_URL
+import pytest
+from config import AUTOMATIONTESTING_CI_BROWSER_LIMITATION_REASON, AUTOMATIONTESTING_REGISTER_URL
 from helpers import dismiss_cookie_consent_if_present
 from playwright.sync_api import Page
 
 logger = logging.getLogger(__name__)
 
 
+@pytest.mark.no_browsers_in_ci("firefox", "webkit", reason=AUTOMATIONTESTING_CI_BROWSER_LIMITATION_REASON)
 def test_select_dropdown(page: Page):
     """Verify selecting an option in the Skills dropdown updates its value from empty to the chosen option."""
     logger.info("Given the Register demo page\n\tWhen I select 'Python' in the Skills dropdown"
@@ -30,6 +32,7 @@ def test_select_dropdown(page: Page):
     assert dropdown_select.input_value() == 'Python'
 
 
+@pytest.mark.no_browsers_in_ci("firefox", "webkit", reason=AUTOMATIONTESTING_CI_BROWSER_LIMITATION_REASON)
 def test_select_radio_button(page: Page):
     """Radio button (round shape) - just one option can be enabled (ex. Male or Female or Other)"""
     logger.info("Given the Register demo page\n\tWhen I select the 'FeMale' radio button"
@@ -56,6 +59,7 @@ def test_select_radio_button(page: Page):
     assert not male_radio.is_checked()
 
 
+@pytest.mark.no_browsers_in_ci("firefox", "webkit", reason=AUTOMATIONTESTING_CI_BROWSER_LIMITATION_REASON)
 def test_select_checkbox_button(page: Page):
     """Checkbox button (square shape) - multiple options can be enabled (ex. Remote and Hybrid, but not on-site)"""
     logger.info("Given the Register demo page\n\tWhen I check the 'Cricket' checkbox"

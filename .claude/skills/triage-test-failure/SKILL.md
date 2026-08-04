@@ -69,11 +69,29 @@ pattern, not re-diagnosing from scratch every time:
   `tests/helpers.py`'s `dismiss_cookie_consent_if_present()`), and `expandtesting.com`'s login
   form fingerprints Firefox/WebKit-driven requests and misreports a wrong error message for
   them specifically - confirmed with a controlled, single-variable repro, not fixable by a
-  retry, so those four login tests are excluded on the non-Chromium legs of the CI matrix (see
-  "Cross-browser testing" in `README.md`). If a test only fails under a specific
-  `--browser` value, re-run the same scenario against a *different* browser as a fresh, fresh
-  context, back-to-back, before assuming it's your code - isolate the browser engine as the
-  single variable, the same way you'd isolate a flaky site.
+  retry, so those four login tests carry `@pytest.mark.no_browsers(...)` (see "Cross-browser
+  testing" in `README.md`). If a test only fails under a specific `--browser` value, re-run the
+  same scenario against a *different* browser as a fresh context, back-to-back, before assuming
+  it's your code - isolate the browser engine as the single variable, the same way you'd
+  isolate a flaky site.
+- **CI-only, datacenter-IP-specific site behavior**: a failure that only happens on GitHub
+  Actions, never locally, isn't necessarily "unreproducible" - it can mean the site treats
+  requests differently based on IP range or engine+IP combination. `automationtesting.in`
+  reliably timed out for Firefox/WebKit on two separate CI runs (14-15 tests each time) while
+  the identical tests passed 28/28 run locally immediately after - confirmed by literally doing
+  both and comparing, not by guessing. Marked `@pytest.mark.no_browsers_in_ci(...)` instead of
+  `no_browsers`, since unlike the fingerprinting case above, these tests are genuinely fine
+  outside of CI and shouldn't be skipped there too.
+- **Unstable site content, not a one-time drift**: don't assume a text/casing mismatch found
+  once is now fixed forever - re-check the *same* element again later before hardcoding a new
+  exact value. OrangeHRM's "Forgot Your Password?" text was verified as "Forgot your
+  password?" (lowercase), then a "Forgot Your Password?" (capitalized) a few hours later in the
+  same session, with the "username" label similarly flip-flopping - almost certainly
+  inconsistent server instances/edge nodes behind the same public demo, not a one-off. An
+  exact-string locator will pass today and silently break again tomorrow for a reason that has
+  nothing to do with the test; match case-insensitively (XPath `translate()`, or
+  `get_by_text(..., exact=False)`) instead of hardcoding whichever casing happened to be live
+  when you checked (see `test_find_locators_css_xpath.py::test_css_locators_via_xpath`).
 
 ## 4. Decide, then act - don't paper over a real bug
 

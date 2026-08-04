@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 from config import (
     AUTOMATIONTESTING_ALERTS_URL,
+    AUTOMATIONTESTING_CI_BROWSER_LIMITATION_REASON,
     ORANGEHRM_ADMIN_PASSWORD,
     ORANGEHRM_ADMIN_USERNAME,
     ORANGEHRM_LOGIN_URL,
@@ -18,6 +19,7 @@ logger = logging.getLogger(__name__)
 RESULTS_DIR = Path(__file__).resolve().parent.parent / "reports" / "test-results"
 
 
+@pytest.mark.no_browsers_in_ci("firefox", "webkit", reason=AUTOMATIONTESTING_CI_BROWSER_LIMITATION_REASON)
 def test_screenshot(page: Page, browser_name: str):
     """Verify both a viewport screenshot and a full-page screenshot are actually written to disk."""
     logger.info("Given the Alerts demo page\n\tWhen I take a viewport and a full-page screenshot"

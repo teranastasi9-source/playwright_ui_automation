@@ -27,6 +27,17 @@ AUTOMATIONTESTING_REGISTER_URL = "https://demo.automationtesting.in/Register.htm
 AUTOMATIONTESTING_FILEUPLOAD_URL = "https://demo.automationtesting.in/FileUpload.html"
 AUTOMATIONTESTING_WINDOWS_URL = "https://demo.automationtesting.in/Windows.html"
 AUTOMATIONTESTING_INDEX_URL = "https://demo.automationtesting.in/Index.html"
+# Verified 2026-08-04 across two separate CI runs: every test hitting this site
+# reliably times out on Page.goto()/wait_for_selector() on Firefox/WebKit when run
+# via GitHub Actions (never on Chromium, in the same runs) - but the identical
+# tests, same browsers, pass 28/28 when run locally from a normal connection.
+# Points at demo.automationtesting.in itself (or infra in front of it) treating
+# non-Chromium traffic from datacenter IP ranges differently, not a code bug.
+AUTOMATIONTESTING_CI_BROWSER_LIMITATION_REASON = (
+    "demo.automationtesting.in reliably times out for Firefox/WebKit specifically when run "
+    "from GitHub Actions' datacenter IPs (28/28 pass locally on the same browsers) - see "
+    "README.md's 'Cross-browser testing'"
+)
 
 # OrangeHRM public demo instance
 ORANGEHRM_LOGIN_URL = "https://opensource-demo.orangehrmlive.com/web/index.php/auth/login"

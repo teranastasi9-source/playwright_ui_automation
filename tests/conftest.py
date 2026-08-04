@@ -1,4 +1,5 @@
 import base64
+import os
 
 import pytest
 from config import (
@@ -46,12 +47,24 @@ def pytest_runtest_setup(item):
     ever returns the closest one, so the first would silently be ignored.
     """
     marker = item.get_closest_marker("no_browsers")
-    if marker is None or not hasattr(item, "callspec"):
-        return
-    browser_name = item.callspec.params.get("browser_name")
-    if browser_name in marker.args:
-        reason = marker.kwargs.get("reason", f"Not supported on {browser_name}")
-        pytest.skip(reason)
+    if marker is not None and hasattr(item, "callspec"):
+        browser_name = item.callspec.params.get("browser_name")
+        if browser_name in marker.args:
+            reason = marker.kwargs.get("reason", f"Not supported on {browser_name}")
+            pytest.skip(reason)
+
+    # Same idea as no_browsers above, but scoped to CI only - for a site that
+    # works fine on these browsers from a normal/local connection, but not
+    # from GitHub Actions' datacenter IP ranges specifically (verified
+    # 2026-08-04: identical tests, same browsers, 28/28 passed locally on
+    # Firefox+WebKit; only fail with connection timeouts when run via CI).
+    # Usage: @pytest.mark.no_browsers_in_ci("firefox", "webkit", reason="...").
+    ci_marker = item.get_closest_marker("no_browsers_in_ci")
+    if ci_marker is not None and hasattr(item, "callspec") and os.environ.get("CI") == "true":
+        browser_name = item.callspec.params.get("browser_name")
+        if browser_name in ci_marker.args:
+            reason = ci_marker.kwargs.get("reason", f"Not supported on {browser_name} in CI")
+            pytest.skip(reason)
 
 
 @pytest.fixture

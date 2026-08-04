@@ -1,6 +1,8 @@
 import logging
 
+import pytest
 from config import (
+    AUTOMATIONTESTING_CI_BROWSER_LIMITATION_REASON,
     AUTOMATIONTESTING_INDEX_URL,
     ORANGEHRM_ADMIN_PASSWORD,
     ORANGEHRM_ADMIN_USERNAME,
@@ -12,6 +14,7 @@ from playwright.sync_api import Page, expect
 logger = logging.getLogger(__name__)
 
 
+@pytest.mark.no_browsers_in_ci("firefox", "webkit", reason=AUTOMATIONTESTING_CI_BROWSER_LIMITATION_REASON)
 def test_css_locators_via_id(page: Page):
     """Verify a field can be located and filled using a CSS id selector."""
     logger.info("Given the demo login page\n\tWhen I locate the email field via a CSS id selector"
@@ -73,11 +76,16 @@ def test_css_locators_via_xpath(page: Page):
 
     # Define relative XPath '//' locator for the 'Forgot Your Password?' link and click it
     # using text() - //tagname[text()='']
-    # Verified against the live site (2026-08-03): the exact wording/casing is
-    # "Forgot Your Password? " (capital Y) - it previously read "Forgot your
-    # password? " (lowercase y), so this drifted from a real content change on
-    # OrangeHRM's demo, not a code bug.
-    forgot_your_password_button = page.wait_for_selector("//p[text()='Forgot Your Password? ']")
+    # Verified live (2026-08-03) that this text's casing actually flips between visits -
+    # "Forgot your password?" and "Forgot Your Password?" have both been observed within the
+    # same session, presumably inconsistent server instances/edge nodes behind this demo. A
+    # case-sensitive exact match broke as soon as it flipped, so this uses XPath's translate()
+    # to lowercase both sides before comparing - same fix applied to the two locators below,
+    # which showed the identical flip-flopping behavior for "username".
+    lower = "translate(%s, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')"
+    forgot_your_password_button = page.wait_for_selector(
+        f"//p[contains({lower % '.'}, 'forgot your password')]"
+    )
     forgot_your_password_button.click()
 
     # Verify we actually navigated to the password-reset request page
@@ -86,12 +94,9 @@ def test_css_locators_via_xpath(page: Page):
     # 'contains' -> //tagname[contains(@attribute, 'value')]
     # 'username' label - use locator() instead of wait_for_selector() here,
     # because expect() only works with Locator objects, not ElementHandle.
-    # Verified against the live site (2026-08-03): both the label text and the
-    # placeholder below are now lowercase "username" (previously "Username"/
-    # placeholder containing "User") - same kind of real content drift as above.
-    username_inscription = page.locator('//label[contains(text(), "username")]')
+    username_inscription = page.locator(f"//label[contains({lower % '.'}, 'username')]")
     expect(username_inscription).to_be_visible()
 
     # 'username' field, located via a partial-attribute XPath match
-    username_field = page.locator('//input[contains(@placeholder, "user")]')
+    username_field = page.locator(f"//input[contains({lower % '@placeholder'}, 'user')]")
     expect(username_field).to_be_visible()

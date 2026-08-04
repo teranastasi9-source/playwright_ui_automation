@@ -139,7 +139,7 @@ this one is gitignored, since it's meant for local debugging, not something to c
 
 ## Markers
 
-Five markers are registered in `pytest.ini`. Three of them let you run a meaningful subset
+Six markers are registered in `pytest.ini`. Three of them let you run a meaningful subset
 instead of the whole suite:
 
 ```bash
@@ -148,11 +148,14 @@ pytest tests -m api          # API-only tests, no browser involved
 pytest tests -m "not slow"   # skip the heavier multi-step/video tests
 ```
 
-The other two aren't for browsing subsets - each drives its own behavior instead:
+The other three aren't for browsing subsets - each drives its own behavior instead:
 - `flaky` - opt-in reruns for one test with a known external timing flake; see "Flaky test
   policy" below.
 - `no_browsers` - skips a test on specific browser engines with a known, understood
-  per-engine limitation; see "Cross-browser testing" below.
+  per-engine limitation, on CI and locally alike; see "Cross-browser testing" below.
+- `no_browsers_in_ci` - same idea, but only skips when the `CI` env var is `"true"` - for a
+  site that works fine on those browsers locally, just not from GitHub Actions' datacenter
+  IPs; see "Cross-browser testing" below.
 
 ## Flaky test policy
 
@@ -257,10 +260,7 @@ documented here as a local, opt-in speed-up.
 
 CI runs the full suite against **Chromium, Firefox, and WebKit** (a matrix job, scheduled
 nightly and available on demand via `workflow_dispatch` - see `full-suite` in
-`.github/workflows/tests.yml`). If the nightly run fails, a GitHub Issue is opened
-automatically (not for push/PR/manual runs - those are already being watched live) - a
-"don't let this go unnoticed" safety net, not a verdict on whether it's a real regression or
-one of the known external-site flakes below.
+`.github/workflows/tests.yml`).
 
 ![GitHub Actions: Tests workflow run passing](docs/github_actions.png)
 
@@ -296,6 +296,27 @@ genuine, verified per-engine differences, not just theoretical ones:
 that one only accepts a single browser name per decorator, and stacking two on the same test
 doesn't combine (`get_closest_marker` only ever returns the closest one) - `no_browsers` takes
 every affected engine in one call instead.
+
+A third pattern needed a different tool entirely. **`demo.automationtesting.in`** reliably
+timed out on `page.goto()`/`wait_for_selector()` for Firefox and WebKit specifically when the
+full-suite matrix ran on GitHub Actions (confirmed across two separate CI runs, 14-15 failing
+tests each time, always this one site, never Chromium) - but the identical tests, same
+browsers, passed 28/28 when run locally from a normal connection immediately after. That
+points at the site (or infra in front of it) treating non-Chromium traffic from datacenter IP
+ranges differently, not a real cross-browser incompatibility of the site's own rendering (that
+was already the case above) and not a code bug - so unlike `no_browsers`, these tests should
+stay enabled locally, just not run on Firefox/WebKit *in CI specifically*. That's
+`@pytest.mark.no_browsers_in_ci("firefox", "webkit", reason=...)` - identical mechanism to
+`no_browsers`, but the skip in `conftest.py` only fires when the `CI` env var GitHub Actions
+sets is `"true"`.
+
+Investigating this also turned up something unrelated but worth knowing: OrangeHRM's demo
+login page text (e.g. "Forgot Your Password?") isn't even *stable* - its casing flipped
+between visits within the same session (verified directly, more than once), likely
+inconsistent server instances/edge nodes behind the same public demo. An exact-match locator
+there will pass today and break tomorrow for a reason that has nothing to do with the test.
+`test_find_locators_css_xpath.py::test_css_locators_via_xpath` now matches case-insensitively
+(XPath `translate()`) instead of assuming any specific casing is stable.
 
 ## Third-party demo sites used
 

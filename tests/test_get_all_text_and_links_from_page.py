@@ -1,12 +1,14 @@
 import logging
 
-from config import AUTOMATIONTESTING_SELECTABLE_URL
+import pytest
+from config import AUTOMATIONTESTING_CI_BROWSER_LIMITATION_REASON, AUTOMATIONTESTING_SELECTABLE_URL
 from helpers import dismiss_cookie_consent_if_present
 from playwright.sync_api import Page
 
 logger = logging.getLogger(__name__)
 
 
+@pytest.mark.no_browsers_in_ci("firefox", "webkit", reason=AUTOMATIONTESTING_CI_BROWSER_LIMITATION_REASON)
 def test_get_all_text_from_page(page: Page):
     """Verify all bold-text elements on the page can be collected and each has visible text."""
     logger.info("Given the demo page\n\tWhen I collect every <b> element on the page"
@@ -26,6 +28,7 @@ def test_get_all_text_from_page(page: Page):
         print(text.text_content())
 
 
+@pytest.mark.no_browsers_in_ci("firefox", "webkit", reason=AUTOMATIONTESTING_CI_BROWSER_LIMITATION_REASON)
 def test_get_all_links_from_page(page: Page):
     """Verify all links on the page can be collected and at least one has a non-empty href."""
     logger.info("Given the demo page\n\tWhen I collect every <a> element on the page"

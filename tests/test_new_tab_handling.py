@@ -1,12 +1,14 @@
 import logging
 
-from config import AUTOMATIONTESTING_WINDOWS_URL
+import pytest
+from config import AUTOMATIONTESTING_CI_BROWSER_LIMITATION_REASON, AUTOMATIONTESTING_WINDOWS_URL
 from helpers import dismiss_cookie_consent_if_present
 from playwright.sync_api import Page
 
 logger = logging.getLogger(__name__)
 
 
+@pytest.mark.no_browsers_in_ci("firefox", "webkit", reason=AUTOMATIONTESTING_CI_BROWSER_LIMITATION_REASON)
 def test_new_tab_closes_without_affecting_original_tab(page: Page):
     """Verify a link opens a new tab, and closing that tab leaves only the original one."""
     logger.info("Given a page with a link that opens a new tab\n\tWhen I click it and then close the new tab"

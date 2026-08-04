@@ -1,12 +1,14 @@
 import logging
 
-from config import AUTOMATIONTESTING_SELECTABLE_URL
+import pytest
+from config import AUTOMATIONTESTING_CI_BROWSER_LIMITATION_REASON, AUTOMATIONTESTING_SELECTABLE_URL
 from helpers import dismiss_cookie_consent_if_present
 from playwright.sync_api import Page, expect
 
 logger = logging.getLogger(__name__)
 
 
+@pytest.mark.no_browsers_in_ci("firefox", "webkit", reason=AUTOMATIONTESTING_CI_BROWSER_LIMITATION_REASON)
 def test_hover_opens_dropdown_and_dblclick_works(page: Page):
     """Verify hovering over "SwitchTo" opens its dropdown, and double-click works on the same element."""
     logger.info("Given the demo page\n\tWhen I hover over 'SwitchTo' and click 'Frames'"

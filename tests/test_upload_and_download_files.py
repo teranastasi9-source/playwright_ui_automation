@@ -3,7 +3,11 @@ import os
 from pathlib import Path
 
 import pytest
-from config import AUTOMATIONTESTING_FILEUPLOAD_URL, THE_INTERNET_DOWNLOAD_URL
+from config import (
+    AUTOMATIONTESTING_CI_BROWSER_LIMITATION_REASON,
+    AUTOMATIONTESTING_FILEUPLOAD_URL,
+    THE_INTERNET_DOWNLOAD_URL,
+)
 from helpers import dismiss_cookie_consent_if_present
 from playwright.sync_api import Page, expect
 
@@ -12,6 +16,7 @@ logger = logging.getLogger(__name__)
 TEST_DATA_DIR = Path(__file__).resolve().parent.parent / "test_data"
 
 
+@pytest.mark.no_browsers_in_ci("firefox", "webkit", reason=AUTOMATIONTESTING_CI_BROWSER_LIMITATION_REASON)
 def test_upload_file(page: Page):
     """Verify a local file can be selected via the file input and is registered by the browser."""
     logger.info("Given the file upload demo page\n\tWhen I select a local file via the file input"

@@ -1,6 +1,7 @@
 import logging
 
-from config import AUTOMATIONTESTING_ALERTS_URL
+import pytest
+from config import AUTOMATIONTESTING_ALERTS_URL, AUTOMATIONTESTING_CI_BROWSER_LIMITATION_REASON
 from helpers import dismiss_cookie_consent_if_present
 from playwright.sync_api import Page
 
@@ -15,6 +16,7 @@ def _make_dialog_handler(captured: list, response_text: str):
     return handle_dialog
 
 
+@pytest.mark.no_browsers_in_ci("firefox", "webkit", reason=AUTOMATIONTESTING_CI_BROWSER_LIMITATION_REASON)
 def test_select_alertbox_with_ok(page: Page):
     """Verify a plain alert() dialog shows the expected message and is auto-accepted."""
     logger.info("Given the Alerts demo page\n\tWhen I trigger a plain alert box"
@@ -37,6 +39,7 @@ def test_select_alertbox_with_ok(page: Page):
     assert captured_messages[0] == "I am an alert box!"
 
 
+@pytest.mark.no_browsers_in_ci("firefox", "webkit", reason=AUTOMATIONTESTING_CI_BROWSER_LIMITATION_REASON)
 def test_select_alertbox_with_ok_cancel(page: Page):
     """Verify a confirm() dialog ("Alert with OK & Cancel") shows the expected message."""
     logger.info("Given the Alerts demo page\n\tWhen I trigger a confirm box"
@@ -64,6 +67,7 @@ def test_select_alertbox_with_ok_cancel(page: Page):
     assert captured_messages[0] == "Press a Button !"
 
 
+@pytest.mark.no_browsers_in_ci("firefox", "webkit", reason=AUTOMATIONTESTING_CI_BROWSER_LIMITATION_REASON)
 def test_select_alertbox_with_textbox(page: Page):
     """Verify a prompt() dialog ("Alert with TextBox") shows the expected message and accepts input."""
     logger.info("Given the Alerts demo page\n\tWhen I trigger the prompt box and answer it"
