@@ -5,7 +5,7 @@ name: Tests
 # individual run a title that actually matches what it did, shown in the Actions run list and
 # when picking "Run workflow" manually.
 run-name: >-
-  ${{ github.event_name == 'schedule' && 'Daily full suite + Pages deploy'
+  ${{ github.event_name == 'schedule' && 'Weekly full suite + Pages deploy'
    || github.event_name == 'workflow_dispatch' && 'Full suite + Pages deploy (manual)'
    || format('Lint + smoke - {0}', github.ref_name) }}
 
