@@ -285,7 +285,7 @@ After running, you should see:
   - Live log output in the console for each test's Given/When/Then narration (`log_cli` in `pytest.ini`)
 
 **Live report:** all three of `full-suite`'s reports are redeployed to GitHub Pages after that
-job runs - daily at 3:00 (schedule) or on-demand via `workflow_dispatch` in the Actions tab, not
+job runs - Mondays at 3:00 (schedule) or on-demand via `workflow_dispatch` in the Actions tab, not
 on every push (`full-suite` itself only runs on schedule/manual dispatch, see
 `.github/workflows/tests.yml`):
 - [chromium](https://teranastasi9-source.github.io/playwright_ui_automation/) (also the site root)

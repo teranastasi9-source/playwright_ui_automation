@@ -15,9 +15,13 @@ on:
   pull_request:
     branches: [main]
   schedule:
-    # Full suite once a day, independent of anyone pushing - catches drift caused
-    # by the third-party demo sites this project depends on, not just code changes.
-    - cron: "0 3 * * *"
+    # Full suite once a week (Monday), independent of anyone pushing - catches drift caused
+    # by the third-party demo sites this project depends on, not just code changes. Was daily
+    # until 2026-08-05: a single bad evening for opensource-demo.orangehrmlive.com (verified
+    # directly, independent of CI - see triage-test-failure skill) produced several days' worth
+    # of red runs to triage for no real signal. Run on demand via workflow_dispatch any time a
+    # fresh report is actually needed (e.g. before sharing the portfolio link).
+    - cron: "0 3 * * 1"
   workflow_dispatch: {}
 
 jobs:
