@@ -284,8 +284,10 @@ After running, you should see:
   - Screenshots and a video recording saved under `reports/test-results/` (from `test_video_and_screenshot.py`)
   - Live log output in the console for each test's Given/When/Then narration (`log_cli` in `pytest.ini`)
 
-**Live report:** the full suite's chromium report (all 38 tests) is redeployed to GitHub Pages
-after every push to `main` - see it at
+**Live report:** the `full-suite` job's chromium report (all 38 tests) is redeployed to GitHub
+Pages after that job runs - daily at 3:00 (schedule) or on-demand via `workflow_dispatch` in the
+Actions tab, not on every push (`full-suite` itself only runs on schedule/manual dispatch, see
+`.github/workflows/tests.yml`) - see it at
 [teranastasi9-source.github.io/playwright_ui_automation](https://teranastasi9-source.github.io/playwright_ui_automation/)
 without cloning anything.
 

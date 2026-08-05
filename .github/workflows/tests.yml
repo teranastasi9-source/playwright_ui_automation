@@ -53,76 +53,6 @@ jobs:
           path: reports/
           retention-days: 14
 
-  full-chromium:
-    name: Full suite (chromium) - push to main, feeds the live Pages report
-    needs: lint
-    if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-          cache: "pip"
-      - run: pip install -r requirements.txt
-      - run: playwright install --with-deps chromium
-      - name: Run the full suite (chromium)
-        run: |
-          # test_search_results_title_contains_playwright excluded - same CI-only Google
-          # bot-check reason as the smoke job above.
-          #
-          # --reruns 1: this job hits many volatile third-party demo sites on every push (not
-          # just once a day like full-suite below) - same rationale as that job's identical
-          # flag, copied here after 2026-08-05 CI runs surfaced OrangeHRM connection errors on
-          # 2-3 different tests per run, not always the same ones, i.e. the shared site being
-          # unstable in general rather than any single test being flaky. A single rerun absorbs
-          # that without masking a real regression. Deliberately not applied to the smoke job
-          # above - that's the fast, strict pre-merge gate, and it should fail loudly on the
-          # first try.
-          pytest tests -k "not test_search_results_title_contains_playwright" --reruns 1 --reruns-delay 3 -v
-      - name: Upload report (always, so failures are inspectable)
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: full-chromium-report
-          path: reports/
-          retention-days: 14
-
-  pages:
-    name: Deploy latest report to GitHub Pages
-    needs: full-chromium
-    # Only on an actual push to main, not PRs - Pages should reflect main's state, not a
-    # preview branch. Requires Pages enabled once in repo Settings > Pages > Source:
-    # "GitHub Actions" (a one-time manual step, not something a workflow file can set).
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    concurrency:
-      group: "pages"
-      cancel-in-progress: false
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: full-chromium-report
-          path: reports/
-      - name: Stage the chromium report as the Pages site root
-        # report_chromium.html is fully self-contained (pytest.ini's --self-contained-html
-        # inlines CSS/JS), so it can be served as-is with no other files alongside it.
-        run: |
-          mkdir -p _site
-          cp reports/report_chromium.html _site/index.html
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: _site
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-
   full-suite:
     name: Full suite (${{ matrix.browser }}) - scheduled / manual
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
@@ -169,3 +99,43 @@ jobs:
           name: full-test-report-${{ matrix.browser }}
           path: reports/
           retention-days: 14
+
+  pages:
+    name: Deploy latest report to GitHub Pages
+    needs: full-suite
+    # Same trigger as full-suite above, since it's what feeds this job's report - the live
+    # report refreshes daily (schedule) or on-demand (workflow_dispatch), not on every push.
+    # A previous version ran a dedicated full-chromium job on every push instead, but that
+    # duplicated full-suite's chromium leg almost exactly (same command, different trigger)
+    # for the sole benefit of same-push freshness - not worth the added CI time and upkeep
+    # (see git history if that tradeoff needs revisiting).
+    # Requires Pages enabled once in repo Settings > Pages > Source: "GitHub Actions" (a
+    # one-time manual step, not something a workflow file can set).
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    concurrency:
+      group: "pages"
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: full-test-report-chromium
+          path: reports/
+      - name: Stage the chromium report as the Pages site root
+        # report_chromium.html is fully self-contained (pytest.ini's --self-contained-html
+        # inlines CSS/JS), so it can be served as-is with no other files alongside it.
+        run: |
+          mkdir -p _site
+          cp reports/report_chromium.html _site/index.html
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
