@@ -164,6 +164,7 @@ jobs:
           name: full-test-report-webkit
           path: reports/webkit/
       - name: Stage whichever reports are available as the Pages site
+        id: stage
         # Each report_<browser>.html is fully self-contained (pytest.ini's
         # --self-contained-html inlines CSS/JS), so each can be served as-is. Chromium stays at
         # the site root (index.html) since that's the URL already linked from README/GIF/profile
@@ -191,22 +192,28 @@ jobs:
           if [ -f reports/chromium/report_chromium.html ]; then
             cp reports/chromium/report_chromium.html _site/index.html
             sed -i "s|<body>|<body>${NAV_CHROMIUM}|" _site/index.html
+            echo "chromium=true" >> "$GITHUB_OUTPUT"
           else
             echo "::warning::No chromium report available this run - site root not updated"
+            echo "chromium=false" >> "$GITHUB_OUTPUT"
           fi
 
           if [ -f reports/firefox/report_firefox.html ]; then
             cp reports/firefox/report_firefox.html _site/firefox.html
             sed -i "s|<body>|<body>${NAV_FIREFOX}|" _site/firefox.html
+            echo "firefox=true" >> "$GITHUB_OUTPUT"
           else
             echo "::warning::No firefox report available this run - firefox.html not updated"
+            echo "firefox=false" >> "$GITHUB_OUTPUT"
           fi
 
           if [ -f reports/webkit/report_webkit.html ]; then
             cp reports/webkit/report_webkit.html _site/webkit.html
             sed -i "s|<body>|<body>${NAV_WEBKIT}|" _site/webkit.html
+            echo "webkit=true" >> "$GITHUB_OUTPUT"
           else
             echo "::warning::No webkit report available this run - webkit.html not updated"
+            echo "webkit=false" >> "$GITHUB_OUTPUT"
           fi
       - uses: actions/upload-pages-artifact@v3
         with:
@@ -214,3 +221,28 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+      - name: Summarize all three report links
+        # The environment "view deployment" link GitHub shows above can only ever be the site
+        # root (chromium) - actions/deploy-pages only ever outputs one URL, there's no way to
+        # make it list more. This writes an explicit, correct list of all three report URLs to
+        # the job summary instead, right next to that single (misleading on its own) link.
+        run: |
+          {
+            echo "### Deployed reports"
+            echo ""
+            if [ "${{ steps.stage.outputs.chromium }}" = "true" ]; then
+              echo "- [chromium](${{ steps.deployment.outputs.page_url }})"
+            else
+              echo "- chromium: not updated this run (no report available)"
+            fi
+            if [ "${{ steps.stage.outputs.firefox }}" = "true" ]; then
+              echo "- [firefox](${{ steps.deployment.outputs.page_url }}firefox.html)"
+            else
+              echo "- firefox: not updated this run (no report available)"
+            fi
+            if [ "${{ steps.stage.outputs.webkit }}" = "true" ]; then
+              echo "- [webkit](${{ steps.deployment.outputs.page_url }}webkit.html)"
+            else
+              echo "- webkit: not updated this run (no report available)"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
