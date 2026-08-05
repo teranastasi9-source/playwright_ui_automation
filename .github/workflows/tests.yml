@@ -70,7 +70,16 @@ jobs:
         run: |
           # test_search_results_title_contains_playwright excluded - same CI-only Google
           # bot-check reason as the smoke job above.
-          pytest tests -k "not test_search_results_title_contains_playwright" -v
+          #
+          # --reruns 1: this job hits many volatile third-party demo sites on every push (not
+          # just once a day like full-suite below) - same rationale as that job's identical
+          # flag, copied here after 2026-08-05 CI runs surfaced OrangeHRM connection errors on
+          # 2-3 different tests per run, not always the same ones, i.e. the shared site being
+          # unstable in general rather than any single test being flaky. A single rerun absorbs
+          # that without masking a real regression. Deliberately not applied to the smoke job
+          # above - that's the fast, strict pre-merge gate, and it should fail loudly on the
+          # first try.
+          pytest tests -k "not test_search_results_title_contains_playwright" --reruns 1 --reruns-delay 3 -v
       - name: Upload report (always, so failures are inspectable)
         if: always()
         uses: actions/upload-artifact@v4
