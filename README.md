@@ -253,7 +253,7 @@ it fails - the same rule CI enforces, just caught locally before it's pushed.
 ## Working with Claude Code
 
 This project is read by [Claude Code](https://claude.com/claude-code) via `CLAUDE.md`
-(a standing code-review checklist) and three custom project-scoped skills in
+(a standing code-review checklist) and four custom project-scoped skills in
 `.claude/skills/`:
 
 - **`add-test-scenario`** - the exact recipe for adding a new test here: where URLs/POMs/
@@ -268,10 +268,13 @@ This project is read by [Claude Code](https://claude.com/claude-code) via `CLAUD
   it as a GitHub Issue on this repo: drafts the title/repro steps/expected-vs-actual for
   review first, then files via `gh issue create` - never auto-filed, and never for a failure
   that turned out to be one of the known external flakes above.
+- **`write-commit-message`** - house style for commit messages: depth calibrated to the size of
+  the change instead of a uniformly long template, with concrete before/after examples.
 
-All three were written from real, repeated situations that came up while building this suite -
-they're not aspirational, they're what "review it properly", "is this actually broken", and
-"is this worth a ticket" looked like in practice here.
+All four were written from real, repeated situations that came up while building this suite -
+they're not aspirational, they're what "review it properly", "is this actually broken", "is
+this worth a ticket", and "does this commit read like a person wrote it" looked like in
+practice here.
 
 ## Expected output
 
