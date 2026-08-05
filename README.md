@@ -330,7 +330,13 @@ documented here as a local, opt-in speed-up.
 
 CI runs the full suite against **Chromium, Firefox, and WebKit** (a matrix job, scheduled
 nightly and available on demand via `workflow_dispatch` - see `full-suite` in
-`.github/workflows/tests.yml`).
+`.github/workflows/tests.yml`) - all on `ubuntu-latest`, deliberately not a Windows/macOS
+matrix too. Playwright drives the *browser engine*, not the host OS, and rendering behavior is
+overwhelmingly a function of the engine, not what it happens to run on top of - a Chromium bug
+is a Chromium bug on Ubuntu or Windows alike. For a suite that tests web pages loaded in a
+browser, engine diversity is the dimension that actually matters; host-OS diversity would only
+earn its cost for something genuinely OS-sensitive (a native desktop app, CLI path handling,
+OS-level dialogs), which isn't the case here.
 
 ![GitHub Actions: Tests workflow run passing](docs/github_actions.png)
 
