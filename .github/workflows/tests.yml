@@ -141,6 +141,7 @@ jobs:
     permissions:
       pages: write
       id-token: write
+      actions: write
     concurrency:
       group: "pages"
       cancel-in-progress: false
@@ -219,6 +220,25 @@ jobs:
             echo "::warning::No webkit report available this run - webkit.html not updated"
             echo "webkit=false" >> "$GITHUB_OUTPUT"
           fi
+      - name: Delete stale github-pages artifact from a previous attempt, if any
+        # Re-running this workflow (rather than triggering a fresh workflow_dispatch) leaves
+        # the previous attempt's already-uploaded "github-pages" artifact in place -
+        # upload-pages-artifact always uses that same fixed name, so a second attempt collides
+        # with it and deploy-pages fails with "Multiple artifacts named github-pages...
+        # Artifact count is 2" (verified 2026-08-05: happened after re-running a run whose
+        # pages job had already succeeded once). Not a code bug, a known interaction between
+        # GitHub's re-run mechanism and Pages artifacts - deleting any leftover one first makes
+        # re-runs safe too, not just fresh runs. No-op (empty jq result, loop body never runs)
+        # on a normal first attempt where nothing stale exists yet.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts" \
+            --jq '.artifacts[] | select(.name=="github-pages") | .id' |
+          while read -r artifact_id; do
+            echo "Deleting stale github-pages artifact $artifact_id"
+            gh api -X DELETE "repos/${{ github.repository }}/actions/artifacts/$artifact_id"
+          done
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
