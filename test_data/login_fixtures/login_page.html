@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<!--
+  Minimal mocked replica of practice.expandtesting.com's /login page after a failed
+  authentication attempt - not a full copy of the real page (which is ~650KB with embedded
+  ad/analytics scripts), just enough markup for LoginPage's own locators/assertions to work:
+  a <title> containing "Login" and a #flash element with the message text. Used only for
+  Firefox/WebKit (see test_login.py) to work around a verified site bug where valid credentials
+  are rejected specifically for those two engines - see "Cross-browser testing" in README.md.
+  {{FLASH_MESSAGE}} is substituted by the route handler at mock time.
+-->
+<html lang="en">
+<head><title>Test Login Page for Automation Testing Practice</title></head>
+<body>
+  <div id="flash" class="alert alert-danger alert-dismissible fade show" role="alert">
+    <b>{{FLASH_MESSAGE}}</b>
+  </div>
+</body>
+</html>

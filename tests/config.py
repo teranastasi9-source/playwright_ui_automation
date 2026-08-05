@@ -11,14 +11,11 @@ EXPANDTESTING_LOGIN_URL = "https://practice.expandtesting.com/login"
 # from here. Keep both in sync if this ever changes.
 EXPANDTESTING_VALID_USERNAME = "practice"
 EXPANDTESTING_VALID_PASSWORD = "SuperSecretPassword!"
-# Verified 2026-08-03 via a controlled, browser-isolated repro (see "Cross-browser
-# testing" in README.md): this login form fingerprints Firefox/WebKit-driven requests
-# and misreports "Your username is invalid!" regardless of what was actually
-# submitted. Chromium is unaffected. Not a code bug, not fixable by a retry.
-EXPANDTESTING_LOGIN_BROWSER_LIMITATION_REASON = (
-    "practice.expandtesting.com's login form misreports errors for Firefox/WebKit-driven "
-    "requests (bot-detection fingerprinting) - see README.md's 'Cross-browser testing'"
-)
+# Verified 2026-08-03, then re-verified 2026-08-05 (behavior had drifted - see git history):
+# this login form fingerprints Firefox/WebKit-driven requests to /authenticate and rejects
+# even genuinely valid credentials for those two engines specifically. Chromium is unaffected.
+# Not a code bug, not fixable by a retry - test_login.py mocks around it for those two engines
+# instead of skipping outright (see that file's mock_login_outcome_for_flaky_engines).
 
 # demo.automationtesting.in - assorted UI widget demos
 AUTOMATIONTESTING_ALERTS_URL = "https://demo.automationtesting.in/Alerts.html"

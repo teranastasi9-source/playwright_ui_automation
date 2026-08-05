@@ -356,22 +356,26 @@ genuine, verified per-engine differences, not just theoretical ones:
   state directly on all three engines. Fixed with a small shared helper,
   `dismiss_cookie_consent_if_present()` in `tests/helpers.py`, called after navigating to any
   page on that site.
-- **`practice.expandtesting.com`'s login form** appears to fingerprint the automated client
-  and silently misreports a wrong username for legitimate Firefox/WebKit-driven requests -
-  Chromium gets the correct message every time under the identical input. This was verified
-  with a controlled repro isolating browser engine as the only variable (fresh browser
-  context per attempt, with and without delays between attempts, run immediately back-to-back
-  with a clean Chromium run to rule out IP-level rate limiting). Since it's a real, one-sided,
-  non-flaky site behavior rather than a code bug or a timing issue, retrying it wouldn't help -
-  the four affected login tests carry `@pytest.mark.no_browsers("firefox", "webkit",
-  reason=...)` and are skipped automatically on those engines (see `conftest.py`'s
-  `pytest_runtest_setup`), on CI and locally alike - they show up as a clean `SKIPPED` with
-  the reason inline, not a red failure.
+- **`practice.expandtesting.com`'s login form** fingerprints Firefox/WebKit-driven requests to
+  its `/authenticate` endpoint and rejects even genuinely valid credentials for those two
+  engines specifically - Chromium is unaffected. Verified with a controlled repro isolating
+  browser engine as the only variable. (A previous version of this note said it only
+  "misreports a wrong username" - re-verified 2026-08-05 and found the real, current behavior
+  is a hard rejection, not just a wrong message; site behavior on a public demo can drift, so
+  don't trust an old verification note over a fresh check.) Since it's a real, one-sided site
+  bug rather than a code bug or a timing issue, retrying it wouldn't help - but skipping
+  outright would also mean zero coverage of `LoginPage`'s own code on two of the three engines.
+  Instead, `test_login.py`'s `mock_login_outcome_for_flaky_engines()` intercepts the
+  `POST /authenticate` request for Firefox/WebKit only and serves the same outcome Chromium
+  legitimately gets (fixtures in `test_data/login_fixtures/`), so these tests verify our own
+  login-flow code against a known-correct outcome instead of either skipping or asserting
+  against the site's known-wrong behavior.
 
-`no_browsers` is this project's own marker, not pytest-playwright's built-in `skip_browser`:
-that one only accepts a single browser name per decorator, and stacking two on the same test
-doesn't combine (`get_closest_marker` only ever returns the closest one) - `no_browsers` takes
-every affected engine in one call instead.
+This project also has its own `no_browsers` marker (not pytest-playwright's built-in
+`skip_browser`, which only accepts one browser name per decorator and doesn't combine when
+stacked - `get_closest_marker` only ever returns the closest one) for cases where mocking
+around a site issue isn't practical and skipping is the right call instead - see
+`conftest.py`'s `pytest_runtest_setup` for how it's wired up.
 
 A third pattern needed a different tool entirely. **`demo.automationtesting.in`** reliably
 timed out on `page.goto()`/`wait_for_selector()` for Firefox and WebKit specifically when the
