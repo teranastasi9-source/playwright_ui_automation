@@ -1,4 +1,13 @@
 name: Tests
+# The static name above applies to every trigger alike (push/PR just run lint+smoke, schedule/
+# workflow_dispatch run the full suite + Pages deploy) - renaming it to describe the full-suite
+# path specifically would be misleading on an ordinary push. run-name instead gives each
+# individual run a title that actually matches what it did, shown in the Actions run list and
+# when picking "Run workflow" manually.
+run-name: >-
+  ${{ github.event_name == 'schedule' && 'Daily full suite + Pages deploy'
+   || github.event_name == 'workflow_dispatch' && 'Full suite + Pages deploy (manual)'
+   || format('Lint + smoke - {0}', github.ref_name) }}
 
 on:
   push:
