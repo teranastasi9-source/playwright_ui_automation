@@ -62,6 +62,7 @@ playwright_ui_automation/
   docs/report_screenshot.png       - report screenshot embedded below, for a no-clone preview
   docs/github_actions.png          - CI run screenshot, embedded in "Cross-browser testing" below
   test_data/                          - JSON/CSV fixtures, sample upload file, local iframe fixture
+  test_data/login_fixtures/           - minimal mocked login/secure pages (see "Cross-browser testing")
   reports/                             - committed HTML report + log per browser, + screenshots/video from the last run
   tests/
     conftest.py                       - shared fixtures (login_page, google_page, orangehrm_admin_page),
