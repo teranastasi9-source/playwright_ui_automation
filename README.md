@@ -284,12 +284,13 @@ After running, you should see:
   - Screenshots and a video recording saved under `reports/test-results/` (from `test_video_and_screenshot.py`)
   - Live log output in the console for each test's Given/When/Then narration (`log_cli` in `pytest.ini`)
 
-**Live report:** the `full-suite` job's chromium report (all 38 tests) is redeployed to GitHub
-Pages after that job runs - daily at 3:00 (schedule) or on-demand via `workflow_dispatch` in the
-Actions tab, not on every push (`full-suite` itself only runs on schedule/manual dispatch, see
-`.github/workflows/tests.yml`) - see it at
-[teranastasi9-source.github.io/playwright_ui_automation](https://teranastasi9-source.github.io/playwright_ui_automation/)
-without cloning anything.
+**Live report:** all three of `full-suite`'s reports are redeployed to GitHub Pages after that
+job runs - daily at 3:00 (schedule) or on-demand via `workflow_dispatch` in the Actions tab, not
+on every push (`full-suite` itself only runs on schedule/manual dispatch, see
+`.github/workflows/tests.yml`):
+- [chromium](https://teranastasi9-source.github.io/playwright_ui_automation/) (also the site root)
+- [firefox](https://teranastasi9-source.github.io/playwright_ui_automation/firefox.html)
+- [webkit](https://teranastasi9-source.github.io/playwright_ui_automation/webkit.html)
 
 Recent runs are also committed at `reports/report_chromium.html`, `reports/report_firefox.html`,
 and `reports/report_webkit.html` so you can see results for all three engines - open any of them

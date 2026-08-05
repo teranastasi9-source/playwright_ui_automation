@@ -130,13 +130,25 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: full-test-report-chromium
-          path: reports/
-      - name: Stage the chromium report as the Pages site root
-        # report_chromium.html is fully self-contained (pytest.ini's --self-contained-html
-        # inlines CSS/JS), so it can be served as-is with no other files alongside it.
+          path: reports/chromium/
+      - uses: actions/download-artifact@v4
+        with:
+          name: full-test-report-firefox
+          path: reports/firefox/
+      - uses: actions/download-artifact@v4
+        with:
+          name: full-test-report-webkit
+          path: reports/webkit/
+      - name: Stage all three reports as the Pages site
+        # Each report_<browser>.html is fully self-contained (pytest.ini's
+        # --self-contained-html inlines CSS/JS), so each can be served as-is. Chromium stays at
+        # the site root (index.html) since that's the URL already linked from README/GIF/profile
+        # - firefox/webkit are added alongside it, not replacing it.
         run: |
           mkdir -p _site
-          cp reports/report_chromium.html _site/index.html
+          cp reports/chromium/report_chromium.html _site/index.html
+          cp reports/firefox/report_firefox.html _site/firefox.html
+          cp reports/webkit/report_webkit.html _site/webkit.html
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
