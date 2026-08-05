@@ -123,7 +123,15 @@ jobs:
     # (see git history if that tradeoff needs revisiting).
     # Requires Pages enabled once in repo Settings > Pages > Source: "GitHub Actions" (a
     # one-time manual step, not something a workflow file can set).
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    #
+    # !cancelled() (not the default "needs full-suite to succeed", and deliberately not a
+    # blanket always()) - deploys the latest report even if some/all browsers had real test
+    # failures, only skipping on a genuine cancellation. This project already uploads every
+    # test report unconditionally ("so failures are inspectable" - see the smoke/full-suite
+    # jobs above); a report that's honestly red is more useful here than no report, or a stale
+    # green one from days ago, especially given how often the failures we've actually hit are
+    # external-site flakiness rather than real regressions (see triage-test-failure skill).
+    if: (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !cancelled()
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
@@ -136,23 +144,32 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      # continue-on-error: a browser leg that hard-timed-out (see timeout-minutes on full-suite)
+      # may never have uploaded an artifact at all - one missing report shouldn't block
+      # deploying the other two, so a failed download here is handled by the staging step
+      # below (it checks each file exists) rather than failing the job outright.
       - uses: actions/download-artifact@v4
+        continue-on-error: true
         with:
           name: full-test-report-chromium
           path: reports/chromium/
       - uses: actions/download-artifact@v4
+        continue-on-error: true
         with:
           name: full-test-report-firefox
           path: reports/firefox/
       - uses: actions/download-artifact@v4
+        continue-on-error: true
         with:
           name: full-test-report-webkit
           path: reports/webkit/
-      - name: Stage all three reports as the Pages site
+      - name: Stage whichever reports are available as the Pages site
         # Each report_<browser>.html is fully self-contained (pytest.ini's
         # --self-contained-html inlines CSS/JS), so each can be served as-is. Chromium stays at
         # the site root (index.html) since that's the URL already linked from README/GIF/profile
-        # - firefox/webkit are added alongside it, not replacing it.
+        # - firefox/webkit are added alongside it, not replacing it. Deployed pass or fail (see
+        # this job's `if:` above), so failing tests must not stop reports that DID generate from
+        # being staged - each browser is copied independently, guarded by its own file check.
         #
         # The pytest-html reports have no built-in cross-linking, and the only link GitHub
         # itself ever shows (the Actions deployment summary) can only ever point at the site
@@ -162,9 +179,6 @@ jobs:
         # hex colors used here, e.g. #79c0ff, and would otherwise break the substitution).
         run: |
           mkdir -p _site
-          cp reports/chromium/report_chromium.html _site/index.html
-          cp reports/firefox/report_firefox.html _site/firefox.html
-          cp reports/webkit/report_webkit.html _site/webkit.html
 
           NAV_STYLE='background:#24292f;color:#c9d1d9;padding:10px 16px;font-family:-apple-system,sans-serif;font-size:14px'
           LINK_STYLE='color:#79c0ff;margin-right:14px'
@@ -174,9 +188,26 @@ jobs:
           NAV_FIREFOX="<div style=\"$NAV_STYLE\">Browser: <a href=\"./\" style=\"$LINK_STYLE\">chromium</a><strong style=\"$CUR_STYLE\">firefox</strong><a href=\"webkit.html\" style=\"$LINK_STYLE\">webkit</a></div>"
           NAV_WEBKIT="<div style=\"$NAV_STYLE\">Browser: <a href=\"./\" style=\"$LINK_STYLE\">chromium</a><a href=\"firefox.html\" style=\"$LINK_STYLE\">firefox</a><strong style=\"$CUR_STYLE\">webkit</strong></div>"
 
-          sed -i "s|<body>|<body>${NAV_CHROMIUM}|" _site/index.html
-          sed -i "s|<body>|<body>${NAV_FIREFOX}|" _site/firefox.html
-          sed -i "s|<body>|<body>${NAV_WEBKIT}|" _site/webkit.html
+          if [ -f reports/chromium/report_chromium.html ]; then
+            cp reports/chromium/report_chromium.html _site/index.html
+            sed -i "s|<body>|<body>${NAV_CHROMIUM}|" _site/index.html
+          else
+            echo "::warning::No chromium report available this run - site root not updated"
+          fi
+
+          if [ -f reports/firefox/report_firefox.html ]; then
+            cp reports/firefox/report_firefox.html _site/firefox.html
+            sed -i "s|<body>|<body>${NAV_FIREFOX}|" _site/firefox.html
+          else
+            echo "::warning::No firefox report available this run - firefox.html not updated"
+          fi
+
+          if [ -f reports/webkit/report_webkit.html ]; then
+            cp reports/webkit/report_webkit.html _site/webkit.html
+            sed -i "s|<body>|<body>${NAV_WEBKIT}|" _site/webkit.html
+          else
+            echo "::warning::No webkit report available this run - webkit.html not updated"
+          fi
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
