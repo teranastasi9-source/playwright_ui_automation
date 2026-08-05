@@ -5,6 +5,10 @@
 
 Purpose: Python-based UI test automation framework built with [Playwright](https://playwright.dev/python/) and [pytest](https://docs.pytest.org/). Portfolio demonstration of UI automation, Page Object Model, and pytest best practices.
 
+![CRUD test in action: creating, verifying, and deleting a Job Title on the OrangeHRM demo](docs/job_titles_crud_demo.gif)
+<sub>`test_job_title_create_and_delete` running headless, recorded at 10fps - creates a
+uniquely-named Job Title, verifies it renders correctly, then deletes it again.</sub>
+
 ## Project Overview
 
 | Aspect | Details |
@@ -54,6 +58,7 @@ playwright_ui_automation/
   requirements-dev.txt              - + ruff and pre-commit, for linting
   pyproject.toml                     - ruff config
   docs/architecture.png            - diagram above (tests -> fixtures -> Page Objects -> targets, + CI)
+  docs/job_titles_crud_demo.gif    - CRUD test recording embedded at the top of this README
   docs/report_screenshot.png       - report screenshot embedded below, for a no-clone preview
   docs/github_actions.png          - CI run screenshot, embedded in "Cross-browser testing" below
   test_data/                          - JSON/CSV fixtures, sample upload file, local iframe fixture
