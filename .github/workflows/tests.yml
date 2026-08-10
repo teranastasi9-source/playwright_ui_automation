@@ -16,7 +16,7 @@ on:
     branches: [main]
   schedule:
     # Full suite once a week (Monday), independent of anyone pushing - catches drift caused
-    # by the third-party demo sites this project depends on, not just code changes. Was daily
+    # by the third-party demo site this project depends on, not just code changes. Was daily
     # until 2026-08-05: a single bad evening for opensource-demo.orangehrmlive.com (verified
     # directly, independent of CI - see triage-test-failure skill) produced several days' worth
     # of red runs to triage for no real signal. Run on demand via workflow_dispatch any time a
@@ -53,13 +53,7 @@ jobs:
       - run: pip install -r requirements.txt
       - run: playwright install --with-deps chromium
       - name: Run smoke tests
-        run: |
-          # test_search_results_title_contains_playwright is deliberately excluded here:
-          # Google actively bot-checks/CAPTCHAs automated searches from datacenter IP
-          # ranges, which is what GitHub-hosted runners use. It's stable from a normal
-          # dev machine but not reliable from CI specifically - see the
-          # triage-test-failure skill for the same pattern applied to other sites.
-          pytest tests -m smoke -k "not test_search_results_title_contains_playwright" -v
+        run: pytest tests -m smoke -v
       - name: Upload report (always, so failures are inspectable)
         if: always()
         uses: actions/upload-artifact@v4
@@ -79,6 +73,28 @@ jobs:
         browser: [chromium, firefox, webkit]
     steps:
       - uses: actions/checkout@v4
+      - name: Start self-hosted OrangeHRM
+        # test_job_titles.py, test_session_reuse.py, and test_find_locators_css_xpath.py's
+        # attribute/xpath tests run against this instead of the shared public demo - see
+        # "Self-hosted OrangeHRM" in README.md for why. Same compose file used locally
+        # (docker-compose.orangehrm.yml), so there's one definition of this setup, not two.
+        run: docker compose -f docker-compose.orangehrm.yml up -d --build
+      - name: Wait for OrangeHRM to finish installing
+        # No native `services:` support for a custom-built image (it only pulls pre-built
+        # ones), so this polls the same healthcheck docker-compose.orangehrm.yml already
+        # defines rather than duplicating that logic here.
+        run: |
+          for i in $(seq 1 40); do
+            status=$(docker inspect --format='{{.State.Health.Status}}' playwright_ui_automation-orangehrm-1 2>/dev/null || echo "starting")
+            if [ "$status" = "healthy" ]; then
+              echo "OrangeHRM is healthy."
+              exit 0
+            fi
+            sleep 3
+          done
+          echo "::error::OrangeHRM did not become healthy in time"
+          docker logs playwright_ui_automation-orangehrm-1 || true
+          exit 1
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -87,19 +103,14 @@ jobs:
       - run: playwright install --with-deps ${{ matrix.browser }}
       - name: Run the full suite
         run: |
-          # test_search_results_title_contains_playwright: excluded on every browser - see the
-          # smoke job above, same root cause (Google bot-checks GitHub's datacenter IPs,
-          # regardless of which browser engine is asking - not a per-browser issue, so it
-          # isn't handled by the @pytest.mark.no_browsers marker below).
-          #
-          # The expandtesting.com login tests are NOT excluded here: they carry
+          # The expandtesting.com login tests aren't excluded here: they carry
           # @pytest.mark.no_browsers("firefox", "webkit", reason=...) and are skipped
           # automatically on those engines by conftest.py's pytest_runtest_setup - see
           # "Cross-browser testing" in README.md for the verified root cause.
           #
-          # --reruns 1: this job already accepts that it hits many volatile third-party demo
-          # sites (that's its whole point per the schedule trigger's comment above) - a single
-          # rerun absorbs an occasional one-off site blip (verified 2026-08-04:
+          # --reruns 1: this job's schedule trigger exists specifically to tolerate drift
+          # from the one third-party demo site (expandtesting.com) this suite still depends
+          # on - a single rerun absorbs an occasional one-off site blip (verified 2026-08-04:
           # test_mouse_actions failed once here on Chromium, passed immediately on a plain
           # local re-run, never reproduced again - ordinary public-demo-site noise, not a bug)
           # without masking a real regression the way retrying forever would. Deliberately not
@@ -107,7 +118,27 @@ jobs:
           # should fail loudly on the first try. A test with its own
           # @pytest.mark.flaky(reruns=N) keeps that N - the marker takes priority over this
           # global default, it doesn't add to it (see pytest-rerunfailures' get_reruns_count).
-          pytest tests --browser=${{ matrix.browser }} -k "not test_search_results_title_contains_playwright" --reruns 1 --reruns-delay 3 -v
+          #
+          # Coverage (--cov) is only collected on the chromium leg: the three browsers run
+          # the exact same tests.pages code, so firefox/webkit would just re-measure the same
+          # lines a third time - one upload per full-suite run is what Codecov expects anyway.
+          COV_ARGS=""
+          if [ "${{ matrix.browser }}" = "chromium" ]; then
+            COV_ARGS="--cov=tests/pages --cov-report=xml --cov-report=term-missing"
+          fi
+          pytest tests --browser=${{ matrix.browser }} --reruns 1 --reruns-delay 3 -v $COV_ARGS
+      - name: Upload coverage to Codecov
+        # See "Coverage" in README.md - this only runs on the chromium leg (coverage.xml only
+        # exists there, see COV_ARGS above). fail_ci_if_error: false so a missing/misconfigured
+        # CODECOV_TOKEN degrades to "no badge update" rather than failing the whole job - the
+        # test results themselves are the thing this workflow must not silently hide failures
+        # on, not the coverage upload.
+        if: always() && matrix.browser == 'chromium'
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
       - name: Upload report (always, so failures are inspectable)
         if: always()
         uses: actions/upload-artifact@v4
@@ -115,6 +146,9 @@ jobs:
           name: full-test-report-${{ matrix.browser }}
           path: reports/
           retention-days: 14
+      - name: Stop self-hosted OrangeHRM
+        if: always()
+        run: docker compose -f docker-compose.orangehrm.yml down
 
   pages:
     name: Deploy latest report to GitHub Pages
