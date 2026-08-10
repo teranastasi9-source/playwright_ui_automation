@@ -1,0 +1,1 @@
+This is a small sample text file served by the QA Playground for download tests.

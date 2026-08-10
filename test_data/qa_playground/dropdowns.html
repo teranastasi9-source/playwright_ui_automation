@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>QA Playground - Dropdowns</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav>
+  <a href="index.html">Home</a>
+  <a href="alerts.html">Alerts</a>
+  <a href="table.html">Table</a>
+  <a href="dropdowns.html">Dropdowns</a>
+  <a href="hover_menu.html">Hover menu</a>
+  <a href="links_and_text.html">Links &amp; text</a>
+  <a href="new_tab.html">New tab</a>
+  <a href="upload_download.html">Upload/Download</a>
+  <a href="login_form.html">Login form</a>
+  <a href="ajax_dropdown.html">AJAX dropdown</a>
+</nav>
+<h1>Registration form</h1>
+
+<p>
+  <label for="Skills">Skills</label><br>
+  <select id="Skills">
+    <option value=""></option>
+    <option value="Python">Python</option>
+    <option value="Java">Java</option>
+    <option value="JavaScript">JavaScript</option>
+  </select>
+</p>
+
+<p>
+  Gender:
+  <label><input type="radio" name="gender" value="Male"> Male</label>
+  <label><input type="radio" name="gender" value="FeMale"> FeMale</label>
+</p>
+
+<p>
+  Sports:
+  <label><input type="checkbox" value="Cricket"> Cricket</label>
+  <label><input type="checkbox" value="Football"> Football</label>
+  <label><input type="checkbox" value="Hockey"> Hockey</label>
+</p>
+
+<p>
+  <button id="submit-registration">Submit</button>
+</p>
+<p id="summary" style="display:none;"></p>
+
+<script>
+document.getElementById('submit-registration').addEventListener('click', function () {
+  const skill = document.getElementById('Skills').value;
+  const gender = document.querySelector('input[name="gender"]:checked');
+  const sports = Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+
+  const parts = [
+    'Skills: ' + (skill || 'none'),
+    'Gender: ' + (gender ? gender.value : 'none'),
+    'Sports: ' + (sports.length ? sports.join(', ') : 'none'),
+  ];
+
+  const summary = document.getElementById('summary');
+  summary.textContent = parts.join(' | ');
+  summary.style.display = 'block';
+});
+</script>
+</body>
+</html>

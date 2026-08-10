@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>QA Playground - Upload / Download</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav>
+  <a href="index.html">Home</a>
+  <a href="alerts.html">Alerts</a>
+  <a href="table.html">Table</a>
+  <a href="dropdowns.html">Dropdowns</a>
+  <a href="hover_menu.html">Hover menu</a>
+  <a href="links_and_text.html">Links &amp; text</a>
+  <a href="new_tab.html">New tab</a>
+  <a href="upload_download.html">Upload/Download</a>
+  <a href="login_form.html">Login form</a>
+  <a href="ajax_dropdown.html">AJAX dropdown</a>
+</nav>
+<h1>Upload / Download</h1>
+
+<p>
+  <label for="input-4">Browse...</label><br>
+  <input type="file" id="input-4">
+</p>
+
+<p>
+  <a id="download-link" href="some-file.txt" download>some-file.txt</a>
+</p>
+
+<script>
+// Once a file is selected, the download link switches from the default sample file to
+// offering back the exact file that was just uploaded - a real round trip, not two
+// unrelated actions on the same page.
+document.getElementById('input-4').addEventListener('change', function (event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function () {
+    const blob = new Blob([reader.result], {type: 'text/plain'});
+    const link = document.getElementById('download-link');
+    link.href = URL.createObjectURL(blob);
+    link.textContent = file.name;
+    link.setAttribute('download', file.name);
+  };
+  reader.readAsText(file);
+});
+</script>
+</body>
+</html>

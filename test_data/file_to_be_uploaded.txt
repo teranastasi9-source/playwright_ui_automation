@@ -1,1 +1,1 @@
-This file is going to be uploaded to the 'https://demo.automationtesting.in/FileUpload.html'
+This file is going to be uploaded via the QA Playground's file upload page.
