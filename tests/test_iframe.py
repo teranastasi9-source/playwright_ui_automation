@@ -18,7 +18,20 @@ IFRAME_DEMO_PATH = Path(__file__).resolve().parent.parent / "test_data" / "ifram
 
 
 def test_typed_text_is_reflected_inside_iframe(page: Page) -> None:
-    """Verify text typed into an editable area inside an iframe is actually reflected inside that frame."""
+    """
+    Test verifies text typed into an editable area inside an iframe is actually reflected
+    inside that frame.
+
+    Test Steps:
+    1. Navigate to the local iframe demo page.
+    2. Locate the editable area inside the iframe via frame_locator().
+    3. Select all existing text and type new text into it.
+
+    Expected results:
+    Before typing, the editable area is visible and shows its placeholder text. After typing,
+    it shows exactly the new text, proving the change happened inside the frame's own
+    document, not just on the outer page.
+    """
     logger.info("Given a page with an editable area inside an iframe\n\tWhen I type text into it"
                 "\n\tThen the frame's content reflects the new text\n")
 

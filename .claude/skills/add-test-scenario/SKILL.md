@@ -42,8 +42,33 @@ it for real** first. Do not guess or assume from memory:
 
 - Function name: describe what it verifies (business behavior), not the technique used -
   `test_login_shows_error_for_invalid_password`, not `test_login_2`.
-- One-line docstring, "Verify ..." phrasing, e.g.:
-  `"""Verify a valid auth token is issued for correct credentials."""`
+- Docstring: every test function uses this exact three-part structure, stating only what the
+  test currently checks - never a change-history narrative ("replaces the previous
+  version...", "used to do X instead of Y"). That belongs in the commit message, not in a
+  docstring every future reader has to read past. The same goes for any README/documentation
+  update that comes with the test: describe the current behavior, not a narrated history of
+  what it used to be.
+  ```python
+  def test_login_shows_error_for_invalid_password(login_page):
+      """
+      Test verifies an error message is shown for a login attempt with a valid username but
+      wrong password.
+
+      Test Steps:
+      1. Navigate to the login page.
+      2. Enter a valid username with an incorrect password.
+      3. Click the Login button.
+
+      Expected results:
+      The page displays the "Your password is invalid!" error message, and the user is not
+      logged in.
+      """
+  ```
+  "Test verifies" states the business behavior, not the technique. "Test Steps" lists the
+  concrete actions taken, in order - matching what the test body actually does, not an
+  idealized version of it. "Expected results" states what should be observably true
+  afterward - the same thing the test's assertions check, in plain language. Keep each line
+  within the project's 120-char limit (ruff `E501` applies inside docstrings too).
 - Add `logger = logging.getLogger(__name__)` at module level if not already present, and a
   single `logger.info(...)` call at the top of the test body narrating it as Given/When/Then,
   e.g.:
