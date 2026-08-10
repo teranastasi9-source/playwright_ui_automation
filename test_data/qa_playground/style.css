@@ -1,0 +1,58 @@
+/* Shared look for every QA Playground page - just enough styling that screenshots/videos
+   don't look like bare unstyled HTML, nothing more. */
+body {
+  font-family: -apple-system, Helvetica, Arial, sans-serif;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px;
+  color: #1f2328;
+}
+nav {
+  background: #24292f;
+  margin: -24px -24px 24px -24px;
+  padding: 14px 24px;
+}
+nav a {
+  color: #c9d1d9;
+  text-decoration: none;
+  margin-right: 16px;
+  font-size: 14px;
+}
+nav a:hover {
+  color: #fff;
+}
+h1 {
+  font-size: 22px;
+  border-bottom: 2px solid #eaecef;
+  padding-bottom: 8px;
+}
+button {
+  background: #2da44e;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+th, td {
+  border: 1px solid #d0d7de;
+  padding: 8px 12px;
+  text-align: left;
+}
+th {
+  background: #f6f8fa;
+}
+.dropdown-content {
+  display: none;
+  padding: 8px;
+  background: #f6f8fa;
+  border: 1px solid #d0d7de;
+}
+.menu:hover .dropdown-content {
+  display: block;
+}

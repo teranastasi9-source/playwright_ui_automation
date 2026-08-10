@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>QA Playground - Alerts</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav>
+  <a href="index.html">Home</a>
+  <a href="alerts.html">Alerts</a>
+  <a href="table.html">Table</a>
+  <a href="dropdowns.html">Dropdowns</a>
+  <a href="hover_menu.html">Hover menu</a>
+  <a href="links_and_text.html">Links &amp; text</a>
+  <a href="new_tab.html">New tab</a>
+  <a href="upload_download.html">Upload/Download</a>
+  <a href="login_form.html">Login form</a>
+  <a href="ajax_dropdown.html">AJAX dropdown</a>
+</nav>
+<h1>Alerts</h1>
+
+<div id="OKTab">
+  <p>Click the button to display an alert box:</p>
+  <button onclick="alert('I am an alert box!')">Click Me</button>
+</div>
+
+<p><a href="#CancelTab">Alert with OK &amp; Cancel</a></p>
+<div id="CancelTab">
+  <p>Click the button to display a confirm box:</p>
+  <ul id="item-list">
+    <li id="sample-item">Sample item <button onclick="confirmBox()">Click Me</button></li>
+  </ul>
+</div>
+
+<p><a href="#Textbox">Alert with TextBox</a></p>
+<div id="Textbox">
+  <p>Click the button to display the prompt box:</p>
+  <button onclick="promptBox()">Click Me</button>
+  <p id="greeting" style="display:none;"></p>
+</div>
+
+<script>
+function confirmBox() {
+  // Only actually deletes the item if the user confirms - Cancel/dismiss must leave it alone.
+  if (confirm('Press a Button !')) {
+    document.getElementById('sample-item').remove();
+  }
+}
+function promptBox() {
+  // Only shows a greeting if the user actually typed a name and accepted - Cancel/dismiss
+  // (a null result) must not show anything.
+  const name = prompt('Please enter your name');
+  if (name) {
+    const greeting = document.getElementById('greeting');
+    greeting.textContent = 'Hello, ' + name + '!';
+    greeting.style.display = 'block';
+  }
+}
+</script>
+</body>
+</html>

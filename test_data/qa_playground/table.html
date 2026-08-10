@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>QA Playground - Table</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav>
+  <a href="index.html">Home</a>
+  <a href="alerts.html">Alerts</a>
+  <a href="table.html">Table</a>
+  <a href="dropdowns.html">Dropdowns</a>
+  <a href="hover_menu.html">Hover menu</a>
+  <a href="links_and_text.html">Links &amp; text</a>
+  <a href="new_tab.html">New tab</a>
+  <a href="upload_download.html">Upload/Download</a>
+  <a href="login_form.html">Login form</a>
+  <a href="ajax_dropdown.html">AJAX dropdown</a>
+</nav>
+<h1>Customers</h1>
+
+<p>
+  <label for="table-search">Search</label><br>
+  <input type="text" id="table-search" placeholder="Filter by any column...">
+</p>
+
+<table id="customers">
+  <tr><th>Company</th><th>Contact</th><th>Country</th></tr>
+  <tr><td>Google</td><td>Maria Anders</td><td>Germany</td></tr>
+  <tr><td>Meta</td><td>Francisco Chang</td><td>Mexico</td></tr>
+  <tr><td>Microsoft</td><td>Roland Mendel</td><td>Austria</td></tr>
+  <tr><td>Island Trading</td><td>Helen Bennett</td><td>UK</td></tr>
+  <tr><td>Adobe</td><td>Yoshi Tannamuri</td><td>Canada</td></tr>
+  <tr><td>Amazon</td><td>Giovanni Rovelli</td><td>Italy</td></tr>
+</table>
+
+<script>
+document.getElementById('table-search').addEventListener('input', function () {
+  const term = this.value.trim().toLowerCase();
+  const rows = document.querySelectorAll('#customers tr');
+  rows.forEach(function (row, index) {
+    if (index === 0) return; // header row always stays visible
+    const matches = !term || row.textContent.toLowerCase().includes(term);
+    row.style.display = matches ? '' : 'none';
+  });
+});
+</script>
+</body>
+</html>

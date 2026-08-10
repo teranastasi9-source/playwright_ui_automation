@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>QA Playground - Links and text</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav>
+  <a href="index.html">Home</a>
+  <a href="alerts.html">Alerts</a>
+  <a href="table.html">Table</a>
+  <a href="dropdowns.html">Dropdowns</a>
+  <a href="hover_menu.html">Hover menu</a>
+  <a href="links_and_text.html">Links &amp; text</a>
+  <a href="new_tab.html">New tab</a>
+  <a href="upload_download.html">Upload/Download</a>
+  <a href="login_form.html">Login form</a>
+  <a href="ajax_dropdown.html">AJAX dropdown</a>
+</nav>
+<h1>Links and text</h1>
+
+<p>
+  <label for="highlight-search">Highlight text</label><br>
+  <input type="text" id="highlight-search" placeholder="Type a word...">
+  <button id="highlight-button">Highlight</button>
+</p>
+
+<div id="content">
+  <p>Bold statement one.</p>
+  <p>Bold statement two.</p>
+  <p>Bold statement three.</p>
+</div>
+
+<ul>
+  <li><a href="https://example.com/one">Example link one</a></li>
+  <li><a href="https://example.com/two">Example link two</a></li>
+  <li><a href="https://example.com/three">Example link three</a></li>
+</ul>
+
+<script>
+document.getElementById('highlight-button').addEventListener('click', function () {
+  const term = document.getElementById('highlight-search').value.trim();
+  document.querySelectorAll('#content p').forEach(function (paragraph) {
+    // Always re-highlight from the original plain text, not the previous run's
+    // markup - otherwise an earlier search's <b> tags would still be there
+    // underneath a new one, and a search with no matches wouldn't actually clear
+    // a previous search's highlights.
+    if (!paragraph.dataset.original) {
+      paragraph.dataset.original = paragraph.textContent;
+    }
+    const original = paragraph.dataset.original;
+    if (!term) {
+      paragraph.textContent = original;
+      return;
+    }
+    const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const pattern = new RegExp('(' + escaped + ')', 'gi');
+    paragraph.innerHTML = original.replace(pattern, '<b>$1</b>');
+  });
+});
+</script>
+</body>
+</html>
