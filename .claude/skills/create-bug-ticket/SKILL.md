@@ -13,10 +13,13 @@ and CI live, so no separate tool/account is needed.
 Run the `triage-test-failure` skill's process before this one. Only continue here if it
 concludes "confirmed real bug":
 
-- A known external flake (dead site, Heroku cold-start, Google bot-check, another visitor's
-  edit to shared OrangeHRM demo data) does **not** get a ticket - those are handled by the
-  flaky test policy, self-contained data, or mocking (see README.md), not by filing an issue
-  every time a public demo site hiccups.
+- A known external flake (a dead or slow demo site) does **not** get a ticket - those are
+  handled by the flaky test policy, self-contained data, or mocking (see README.md), not by
+  filing an issue every time a public demo site hiccups. Most UI-pattern tests run against
+  the self-built QA Playground and the OrangeHRM-dependent tests against a self-hosted
+  instance (see README.md), neither of which can flake this way at all - this only applies
+  to `test_login.py`, the one file still targeting a real external site
+  (`practice.expandtesting.com`).
 - If triage is inconclusive (still failing but the cause isn't clear yet), that's a reason to
   keep investigating, not to file a vague ticket now and figure it out later.
 

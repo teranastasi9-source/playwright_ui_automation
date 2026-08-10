@@ -1,14 +1,17 @@
 ---
 name: triage-test-failure
-description: Diagnose whether a failing test in this project is a real bug or an external-dependency flake (a shared demo site being slow, down, or having had its data changed by another visitor). Use when a test fails and it's unclear whether the test/code or an external site is at fault.
+description: Diagnose whether a failing test in this project is a real bug or an external-dependency flake (the one remaining external demo site being slow or down). Use when a test fails and it's unclear whether the test/code or the external site is at fault.
 ---
 
 # Triage a test failure
 
-This project intentionally exercises several public, third-party demo sites (see
-"Third-party demo sites used" in `README.md`). A failure here can mean a real regression,
-or it can mean the outside world changed under the test. Don't assume either way - work
-through this before changing any code.
+Most UI-pattern tests run against a self-built local fixture app (see "QA Playground" in
+`README.md`), and the OrangeHRM-dependent tests run against a self-hosted instance (see
+"Self-hosted OrangeHRM" in `README.md`) - neither can be affected by the outside world at
+all. `test_login.py` still deliberately exercises a real, public, third-party site (see
+"Third-party demo site still used" in `README.md`) - a failure there can mean a real
+regression, or it can mean the outside world changed under the test. Don't assume either way
+- work through this before changing any code.
 
 ## 1. Re-run it in isolation
 
@@ -40,64 +43,75 @@ Don't debug through the full pytest+fixture stack first. Write a minimal, standa
 `sync_playwright()` (or `curl`/`requests` for an API) script that hits the exact same
 target the test hits, and look at the real, current result:
 
-- Is the site reachable at all right now?
+- Is the site (or, for OrangeHRM, the local container) reachable at all right now? For
+  OrangeHRM specifically, check `docker inspect --format='{{.State.Health.Status}}'
+  playwright_ui_automation-orangehrm-1` before suspecting anything else - a connection error
+  there almost always just means the compose stack isn't up yet (see "Self-hosted OrangeHRM"
+  in `README.md`), not a real regression.
 - Does it return the content/status/timing the test expects?
-- If the test targets a shared public demo (OrangeHRM, automationtesting.in, etc.), has the
-  data it depends on been changed by another visitor? (This project hit exactly this: a
-  shared OrangeHRM job-titles list gets edited by other people using the same public demo.)
 
 This project's own history has concrete examples of each category - worth recognizing the
 pattern, not re-diagnosing from scratch every time:
 - **Dead site**: `demo.imacros.net` stopped resolving entirely -> replaced with
-  `the-internet.herokuapp.com` (see `tests/config.py`).
-- **Cold-start slowness**: `the-internet.herokuapp.com` runs on a free Heroku dyno that can
-  take longer than expected to respond after being idle -> handled with a longer explicit
-  timeout on that one locator, not a blanket retry (see `test_upload_and_download_files.py`).
-- **Bot detection**: Google can serve a CAPTCHA/"sorry" page for automated searches -> a
-  previous version of `test_job_titles.py::test_job_title_create_and_delete` was a Playwright
-  Codegen recording of a live Google search -> otomoto.pl flow; that was replaced with a
-  self-contained test against a stable demo app instead of patched (see that test's own
-  docstring for the full story).
-- **Shared/mutable demo data**: other visitors edit the same public OrangeHRM instance ->
-  handled by either creating uniquely-named data and cleaning it up
-  (`test_job_titles.py::test_job_title_create_and_delete`), or mocking the network response
-  entirely so the assertion never depends on live shared data (the same file's mocked-API
-  tests).
+  `the-internet.herokuapp.com`, which was itself later replaced by the self-built, always-up
+  QA Playground once enough of these sites had proven individually unreliable (see "QA
+  Playground" in `README.md`).
+- **Bot detection**: a real search engine can serve a CAPTCHA/"sorry" page for automated
+  traffic, not because of anything wrong in the test - a Codegen recording of a live search
+  flow against one was replaced with a self-contained test against a stable demo app instead
+  of patched, for exactly this reason.
+- **Shared/mutable demo data**: this suite used to point at the shared public OrangeHRM demo,
+  where other visitors edited the same data -> handled at the time by either creating
+  uniquely-named data and cleaning it up (`test_job_titles.py::test_job_title_create_and_delete`),
+  or mocking the network response entirely (the same file's mocked-API tests). OrangeHRM is
+  now self-hosted (see "Self-hosted OrangeHRM" in `README.md`), which removes this risk at the
+  root - nobody else can edit this instance's data - but both techniques stayed, since
+  self-contained data and API mocking are good practice regardless of whether the risk is
+  currently live.
 - **Browser-specific site behavior**: running cross-browser for real (not just documenting
-  `--browser` support) surfaced two genuine per-engine differences on third-party sites -
-  `automationtesting.in`'s cookie-consent dialog only renders on Firefox/WebKit (fixed with
-  `tests/helpers.py`'s `dismiss_cookie_consent_if_present()`), and `expandtesting.com`'s login
-  form fingerprints Firefox/WebKit-driven requests and misreports a wrong error message for
-  them specifically - confirmed with a controlled, single-variable repro, not fixable by a
-  retry, so those four login tests carry `@pytest.mark.no_browsers(...)` (see "Cross-browser
-  testing" in `README.md`). If a test only fails under a specific `--browser` value, re-run the
-  same scenario against a *different* browser as a fresh context, back-to-back, before assuming
-  it's your code - isolate the browser engine as the single variable, the same way you'd
-  isolate a flaky site.
+  `--browser` support) surfaced a genuine per-engine difference on a third-party site -
+  `expandtesting.com`'s login form fingerprints Firefox/WebKit-driven requests to
+  `/authenticate` and rejects even genuinely valid credentials for those two engines
+  specifically - confirmed with a controlled, single-variable repro, not fixable by a retry.
+  This one wasn't fixed by skipping: `test_login.py`'s `mock_login_outcome_for_flaky_engines()`
+  intercepts that request for Firefox/WebKit only and serves the same outcome Chromium
+  legitimately gets, so those tests still verify our own login-flow code on all three engines
+  (see "Cross-browser testing" in `README.md`). If a test only fails under a specific
+  `--browser` value, re-run the same scenario against a *different* browser as a fresh context,
+  back-to-back, before assuming it's your code - isolate the browser engine as the single
+  variable, the same way you'd isolate a flaky site.
 - **CI-only, datacenter-IP-specific site behavior**: a failure that only happens on GitHub
   Actions, never locally, isn't necessarily "unreproducible" - it can mean the site treats
-  requests differently based on IP range or engine+IP combination. `automationtesting.in`
-  reliably timed out for Firefox/WebKit on two separate CI runs (14-15 tests each time) while
-  the identical tests passed 28/28 run locally immediately after - confirmed by literally doing
-  both and comparing, not by guessing. Marked `@pytest.mark.no_browsers_in_ci(...)` instead of
-  `no_browsers`, since unlike the fingerprinting case above, these tests are genuinely fine
-  outside of CI and shouldn't be skipped there too.
+  requests differently based on IP range or engine+IP combination. A previously-used
+  third-party demo site reliably timed out for Firefox/WebKit on two separate CI runs (14-15
+  tests each time) while the identical tests passed 28/28 run locally immediately after -
+  confirmed by literally doing both and comparing, not by guessing. That site was later
+  replaced by the local QA Playground, removing the problem entirely, but the marker built for
+  it (`@pytest.mark.no_browsers_in_ci(...)`, distinct from `no_browsers` since these tests are
+  genuinely fine outside of CI) is still registered and ready if a future external target hits
+  the same pattern.
 - **Unstable site content, not a one-time drift**: don't assume a text/casing mismatch found
   once is now fixed forever - re-check the *same* element again later before hardcoding a new
-  exact value. OrangeHRM's "Forgot Your Password?" text was verified as "Forgot your
-  password?" (lowercase), then a "Forgot Your Password?" (capitalized) a few hours later in the
-  same session, with the "username" label similarly flip-flopping - almost certainly
-  inconsistent server instances/edge nodes behind the same public demo, not a one-off. An
-  exact-string locator will pass today and silently break again tomorrow for a reason that has
-  nothing to do with the test; match case-insensitively (XPath `translate()`, or
+  exact value. The shared public OrangeHRM demo's "Forgot Your Password?" text was verified as
+  "Forgot your password?" (lowercase), then a "Forgot Your Password?" (capitalized) a few
+  hours later in the same session, with the "username" label similarly flip-flopping - almost
+  certainly inconsistent server instances/edge nodes behind that shared demo, not a one-off.
+  An exact-string locator will pass today and silently break again tomorrow for a reason that
+  has nothing to do with the test; match case-insensitively (XPath `translate()`, or
   `get_by_text(..., exact=False)`) instead of hardcoding whichever casing happened to be live
-  when you checked (see `test_find_locators_css_xpath.py::test_css_locators_via_xpath`).
+  when you checked. This is exactly the kind of instability self-hosting OrangeHRM (see
+  "Self-hosted OrangeHRM" in `README.md`) was partly meant to eliminate at the root - but
+  `test_find_locators_css_xpath.py::test_css_locators_via_xpath` still matches
+  case-insensitively as a general defensive habit, even against the now-stable self-hosted
+  instance.
 
 ## 4. Decide, then act - don't paper over a real bug
 
 - **Confirmed external/environmental**: consider whether the test needs to be hardened
   (longer timeout with a comment explaining why, or switched to creating its own data /
-  mocking the response) rather than just re-run until it's green.
+  mocking the response) rather than just re-run until it's green. State the current reason
+  for the change in that comment/docstring, not the diagnostic journey that led to it - see
+  `add-test-scenario`'s docstring guidance for the same rule applied there.
 - **Confirmed real bug**: fix the actual cause. Never "fix" a failing assertion by loosening
   it to match whatever the code currently does - only change an expected value after you've
   independently verified (step 3's method) that the new value is actually correct.
