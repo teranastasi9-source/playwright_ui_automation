@@ -1,8 +1,10 @@
-"""Named URLs for the third-party demo sites used across the test suite.
+"""Named URLs for the demo sites and self-hosted instances used across the test suite.
 
 Centralising them here means a dead/changed demo site only needs updating
 in one place instead of being hunted down across every test file.
 """
+
+import os
 
 # expandtesting.com - login flow demos
 EXPANDTESTING_LOGIN_URL = "https://practice.expandtesting.com/login"
@@ -17,56 +19,32 @@ EXPANDTESTING_VALID_PASSWORD = "SuperSecretPassword!"
 # Not a code bug, not fixable by a retry - test_login.py mocks around it for those two engines
 # instead of skipping outright (see that file's mock_login_outcome_for_flaky_engines).
 
-# demo.automationtesting.in - assorted UI widget demos
-AUTOMATIONTESTING_ALERTS_URL = "https://demo.automationtesting.in/Alerts.html"
-AUTOMATIONTESTING_SELECTABLE_URL = "https://demo.automationtesting.in/Selectable.html"
-AUTOMATIONTESTING_REGISTER_URL = "https://demo.automationtesting.in/Register.html"
-AUTOMATIONTESTING_FILEUPLOAD_URL = "https://demo.automationtesting.in/FileUpload.html"
-AUTOMATIONTESTING_WINDOWS_URL = "https://demo.automationtesting.in/Windows.html"
-AUTOMATIONTESTING_INDEX_URL = "https://demo.automationtesting.in/Index.html"
-# Verified 2026-08-04 across two separate CI runs: every test hitting this site
-# reliably times out on Page.goto()/wait_for_selector() on Firefox/WebKit when run
-# via GitHub Actions (never on Chromium, in the same runs) - but the identical
-# tests, same browsers, pass 28/28 when run locally from a normal connection.
-# Points at demo.automationtesting.in itself (or infra in front of it) treating
-# non-Chromium traffic from datacenter IP ranges differently, not a code bug.
-AUTOMATIONTESTING_CI_BROWSER_LIMITATION_REASON = (
-    "demo.automationtesting.in reliably times out for Firefox/WebKit specifically when run "
-    "from GitHub Actions' datacenter IPs (28/28 pass locally on the same browsers) - see "
-    "README.md's 'Cross-browser testing'"
-)
-
-# OrangeHRM public demo instance
-ORANGEHRM_LOGIN_URL = "https://opensource-demo.orangehrmlive.com/web/index.php/auth/login"
-ORANGEHRM_DASHBOARD_URL = "https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index"
-ORANGEHRM_JOB_TITLES_URL = "https://opensource-demo.orangehrmlive.com/web/index.php/admin/viewJobTitleList"
+# Self-hosted OrangeHRM (see docker-compose.orangehrm.yml + orangehrm/ and "Self-hosted
+# OrangeHRM" in README.md). ORANGEHRM_BASE_URL defaults to the port docker-compose.orangehrm.yml
+# publishes; override it if that instance is reachable elsewhere (e.g. by service name on
+# a shared Docker network - see README).
+ORANGEHRM_BASE_URL = os.environ.get("ORANGEHRM_BASE_URL", "http://localhost:8300")
+ORANGEHRM_LOGIN_URL = f"{ORANGEHRM_BASE_URL}/web/index.php/auth/login"
+ORANGEHRM_DASHBOARD_URL = f"{ORANGEHRM_BASE_URL}/web/index.php/dashboard/index"
+ORANGEHRM_JOB_TITLES_URL = f"{ORANGEHRM_BASE_URL}/web/index.php/admin/viewJobTitleList"
 ORANGEHRM_JOB_TITLES_API_URL_PATTERN = "**/api/v2/admin/job-titles**"
-ORANGEHRM_JOB_TITLES_API_URL = "https://opensource-demo.orangehrmlive.com/web/index.php/api/v2/admin/job-titles"
+ORANGEHRM_JOB_TITLES_API_URL = f"{ORANGEHRM_BASE_URL}/web/index.php/api/v2/admin/job-titles"
+ORANGEHRM_ADD_EMPLOYEE_URL = f"{ORANGEHRM_BASE_URL}/web/index.php/pim/addEmployee"
+ORANGEHRM_SYSTEM_USERS_URL = f"{ORANGEHRM_BASE_URL}/web/index.php/admin/viewSystemUsers"
+ORANGEHRM_DEFINE_LEAVE_PERIOD_URL = f"{ORANGEHRM_BASE_URL}/web/index.php/leave/defineLeavePeriod"
+ORANGEHRM_ADD_LEAVE_TYPE_URL = f"{ORANGEHRM_BASE_URL}/web/index.php/leave/defineLeaveType"
+ORANGEHRM_ADD_ENTITLEMENT_URL = f"{ORANGEHRM_BASE_URL}/web/index.php/leave/addLeaveEntitlement"
+ORANGEHRM_APPLY_LEAVE_URL = f"{ORANGEHRM_BASE_URL}/web/index.php/leave/applyLeave"
 ORANGEHRM_ADMIN_USERNAME = "Admin"
-ORANGEHRM_ADMIN_PASSWORD = "admin123"
-# How long to wait for a post-login/post-save redirect on this demo instance -
+# Must satisfy both OrangeHRM's install-time password policy and its separate post-login
+# weak-password check - see orangehrm/entrypoint.sh and docker-compose.orangehrm.yml, which
+# set this same password when installing the instance. Keep both in sync if this changes.
+ORANGEHRM_ADMIN_PASSWORD = "QaPlayground#2026"
+# How long to wait for a post-login/post-save redirect on this instance -
 # shared by conftest.py and pages/job_titles_page.py.
 ORANGEHRM_NAV_TIMEOUT_MS = 15000
 
-# techlistic.com - static HTML table demo
-TECHLISTIC_WEBTABLE_URL = "https://www.techlistic.com/2017/02/automate-demo-web-table-with-selenium.html"
-
-# plus2net.com - AJAX dropdown demo
-PLUS2NET_AJAX_URL = "https://www.plus2net.com/php_tutorial/ajax_drop_down_list-demo.php"
-
-# the-internet.herokuapp.com (Dave Haeffner / Sauce Labs) - stable, well-known
-# QA practice site. Replaces demo.imacros.net, which stopped resolving
-# entirely (verified 2026-08-01: ERR_NAME_NOT_RESOLVED).
-THE_INTERNET_DOWNLOAD_URL = "https://the-internet.herokuapp.com/download"
-
-# reqres.in - public fake REST API used for API-level tests
-REQRES_API_BASE_URL = "https://reqres.in/api"
-
 # Non-functional check: fail if a request takes noticeably longer than its
-# normal, verified latency (typically 20-150ms). 2000ms leaves headroom for
-# network/CI variance while still catching a genuinely broken/slow response.
+# normal, verified latency. 2000ms leaves headroom for CI variance while still
+# catching a genuinely broken/slow response.
 API_MAX_RESPONSE_TIME_MS = 2000
-
-# Google
-GOOGLE_URL = "https://google.com"
-GOOGLE_NO_REDIRECT_URL = "https://google.com/ncr"

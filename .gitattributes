@@ -1,3 +1,8 @@
 # Generated test reports - exclude from GitHub's language statistics so the
 # Languages bar reflects actual source code (Python), not committed HTML reports.
 reports/*.html linguist-generated=true
+
+# Force LF regardless of local core.autocrlf - a CRLF line ending on the #!/bin/sh shebang
+# breaks execution inside the Linux container this script runs in (orangehrm/entrypoint.sh
+# is COPYed as-is into the image at build time), so Windows checkouts must not convert it.
+*.sh text eol=lf

@@ -5,7 +5,7 @@ from pages.base_page import BasePage
 
 
 class JobTitlesPage(BasePage):
-    """Admin > Job > Job Titles page (OrangeHRM demo)."""
+    """Admin > Job > Job Titles page (self-hosted OrangeHRM)."""
 
     def __init__(self, page: Page) -> None:
         super().__init__(page)

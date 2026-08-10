@@ -13,7 +13,7 @@ from playwright.sync_api import Page, expect
 
 logger = logging.getLogger(__name__)
 
-# This is the SAME public/shared demo page used by the mocked-API tests below,
+# This is the SAME self-hosted OrangeHRM page used by the mocked-API tests below,
 # approached from the opposite angle. Instead of mocking the network
 # response, this test creates and cleans up its own real data.
 MOCKED_JOB_TITLES_RESPONSE = {
@@ -41,26 +41,19 @@ MOCKED_JOB_TITLES_RESPONSE = {
 @pytest.mark.slow
 def test_job_title_create_and_delete(orangehrm_admin_page: Page) -> None:
     """
-    Verify a Job Title can be created with unique data, appears correctly in the UI, and is cleaned up afterward.
+    Test verifies a Job Title can be created with unique data, appears correctly in the UI,
+    and is cleaned up afterward - an end-to-end CRUD check against OrangeHRM's Admin > Job >
+    Job Titles page.
 
-    End-to-end CRUD check against OrangeHRM's Admin > Job > Job Titles page.
+    Test Steps:
+    1. Navigate to the Job Titles page as an authenticated Admin.
+    2. Add a Job Title with a uniquely-timestamped title and a description.
+    3. Delete that same Job Title.
 
-    Replaces the previous version of this test, which was a Playwright
-    Codegen recording of a live Google search -> otomoto.pl flow. That
-    approach was unreliable for automated regression testing: it depended
-    on Google not showing a bot-check page, on Google's search results
-    staying identical over time, and on mutating real state on someone
-    else's production site. This version instead:
-      - targets a stable, purpose-built demo application,
-      - creates its OWN uniquely-named test data instead of asserting
-        against shared, publicly-editable demo content (other visitors
-        constantly add unrelated entries to this public demo's data), and
-      - cleans up after itself, so repeated runs don't leave junk behind
-        on the shared demo instance.
-
-    Login itself is handled by the `orangehrm_admin_page` fixture (see
-    conftest.py), which reuses a storage_state captured once per test
-    session instead of repeating the UI login here.
+    Expected results:
+    A row for the new title appears containing both the exact title and description that
+    were entered - not just any new row. The title creates its own uniquely-named data rather
+    than asserting against pre-existing content, so repeated runs never collide.
     """
     logger.info("Given the OrangeHRM Job Titles page\n\tWhen I create a uniquely-named Job Title"
                 "\n\tThen it appears in the list with the correct data, and can be deleted again\n")
@@ -82,16 +75,22 @@ def test_job_title_create_and_delete(orangehrm_admin_page: Page) -> None:
     job_titles_page.delete_job_title(unique_title)
 
 
-@pytest.mark.flaky(reruns=1, reruns_delay=3)
-# Only the Job Titles API response is mocked below - the page navigation itself still hits the
-# real, shared OrangeHRM demo site, so it's subject to that site's own occasional slowness.
-# Verified 2026-08-04: this test timed out on Page.goto (30s) in CI, passed immediately on an
-# unmodified re-run of the same job - not a regression, an external-site blip (see
-# triage-test-failure skill).
 def test_job_titles_list_renders_mocked_api_response(orangehrm_admin_page: Page) -> None:
-    """Verify the Job Titles list renders exactly the data returned by its API, using a fully mocked response."""
+    """
+    Test verifies the Job Titles list renders exactly the data returned by its API, using a
+    fully mocked response.
+
+    Test Steps:
+    1. Mock the Job Titles API to return two fixed, known rows.
+    2. Navigate to the Job Titles page.
+
+    Expected results:
+    Both mocked titles ("Mocked Job Title A", "Mocked Job Title B") are visible, and the
+    "(2) Records Found" count matches the mocked data - nothing from the real instance's own
+    data leaks through.
+    """
     logger.info("Given a mocked Job Titles API response\n\tWhen I load the Job Titles page"
-                "\n\tThen it renders exactly the mocked rows, not the real shared demo data\n")
+                "\n\tThen it renders exactly the mocked rows, not the real instance data\n")
 
     # Mock the API response
     orangehrm_admin_page.route(
@@ -107,21 +106,25 @@ def test_job_titles_list_renders_mocked_api_response(orangehrm_admin_page: Page)
     orangehrm_admin_page.goto(ORANGEHRM_JOB_TITLES_URL)
     orangehrm_admin_page.wait_for_load_state("load")
 
-    # The list must show EXACTLY the mocked rows - nothing from the real, shared demo data leaked through
+    # The list must show EXACTLY the mocked rows - nothing from the real instance data leaked through
     expect(orangehrm_admin_page.get_by_text("Mocked Job Title A")).to_be_visible()
     expect(orangehrm_admin_page.get_by_text("Mocked Job Title B")).to_be_visible()
     expect(orangehrm_admin_page.get_by_text("(2) Records Found")).to_be_visible()
 
 
-@pytest.mark.flaky(reruns=1, reruns_delay=3)
-# Same reason as test_job_titles_list_renders_mocked_api_response above - only the API response
-# is mocked, the page navigation still depends on the real, shared OrangeHRM demo site.
 def test_job_titles_list_handles_api_error(orangehrm_admin_page: Page) -> None:
     """
-    Verify the page doesn't crash/hang when its data API fails. This is the
-    kind of negative scenario that's slow, unreliable, or simply impossible
-    to trigger reliably against a real backend - mocking is what makes it
-    practical to test at all.
+    Test verifies the page doesn't crash or hang when its data API fails - a negative
+    scenario that's slow, unreliable, or simply impossible to trigger on demand against a
+    real backend, which is what makes mocking it worthwhile.
+
+    Test Steps:
+    1. Mock the Job Titles API to return a 500 error.
+    2. Navigate to the Job Titles page.
+
+    Expected results:
+    The page's own chrome (the "Job Titles" heading and the "Add" button) still renders
+    despite the failed data call, instead of the app crashing into a blank page.
     """
     logger.info("Given a mocked 500 error from the Job Titles API\n\tWhen I load the Job Titles page"
                 "\n\tThen the page itself still renders instead of crashing\n")
@@ -145,20 +148,19 @@ def test_job_titles_list_handles_api_error(orangehrm_admin_page: Page) -> None:
 @pytest.mark.slow
 def test_job_title_created_via_api_is_visible_in_ui(orangehrm_admin_page: Page) -> None:
     """
-    Verify a Job Title created directly via the API is correctly rendered in the UI.
+    Test verifies a Job Title created directly via the API is correctly rendered in the UI -
+    a hybrid API+UI check that creates the record through OrangeHRM's real internal REST API
+    (bypassing the "Add Job Title" form entirely), then verifies it in the UI.
 
-    Hybrid API+UI check: create the record directly through OrangeHRM's real
-    internal REST API (bypassing the "Add Job Title" form entirely), then
-    verify it actually renders in the UI.
+    Test Steps:
+    1. POST a uniquely-titled Job Title directly to the internal Job Titles API.
+    2. Navigate to the Job Titles page in the UI.
+    3. Delete that same Job Title via the UI.
 
-    `orangehrm_admin_page.request` is an APIRequestContext that shares
-    cookies with the browser context behind `orangehrm_admin_page` - no
-    separate login or manual cookie handling is needed to authenticate the
-    API call.
-
-    This is the kind of test that's normally used to set up state fast (via
-    API) while still asserting on the thing users actually see (the UI), and
-    it exercises both layers of the same feature in one scenario.
+    Expected results:
+    The API response is successful with a generated id. The UI then shows a row for that
+    exact title containing the description that was posted, proving the API-created record
+    renders correctly - not just that the API call itself succeeded.
     """
     logger.info("Given an authenticated API session\n\tWhen I create a Job Title via a direct API call"
                 "\n\tThen it appears correctly in the OrangeHRM UI\n")

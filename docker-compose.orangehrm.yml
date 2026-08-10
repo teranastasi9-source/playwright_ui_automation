@@ -1,0 +1,52 @@
+# Self-hosted OrangeHRM used by test_job_titles.py, test_session_reuse.py, and
+# test_find_locators_css_xpath.py's attribute/xpath tests, instead of the shared
+# public opensource-demo.orangehrmlive.com instance. See README's "Self-hosted
+# OrangeHRM" section for why.
+#
+# Deliberately no persisted volumes: every `docker compose up` re-runs OrangeHRM's
+# own unattended installer against a fresh, empty database (see orangehrm/entrypoint.sh).
+# That costs ~15-20s per start, in exchange for a guaranteed-clean instance every time -
+# the same guarantee CI gets, with no local/CI drift and no stale seed data to maintain.
+#
+# Usage:
+#   docker compose -f docker-compose.orangehrm.yml up -d --build
+#   docker compose -f docker-compose.orangehrm.yml down
+
+services:
+  orangehrm-db:
+    image: mariadb:10.6
+    environment:
+      MYSQL_ROOT_PASSWORD: orangehrm
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  orangehrm:
+    build: ./orangehrm
+    depends_on:
+      orangehrm-db:
+        condition: service_healthy
+    environment:
+      DB_HOST_NAME: orangehrm-db
+      DB_HOST_PORT: 3306
+      DB_NAME: orangehrm
+      DB_PRIVILEGED_USER: root
+      DB_PRIVILEGED_PASSWORD: orangehrm
+      ORG_NAME: QA Playground
+      ORG_COUNTRY: united states
+      ADMIN_USERNAME: Admin
+      # Must satisfy OrangeHRM's install-time complexity check AND its separate
+      # post-login weak-password check (verified directly - "Admin@123" passes the
+      # first but is rejected by the second, forcing an interactive reset on first
+      # login otherwise).
+      ADMIN_PASSWORD: "QaPlayground#2026"
+    ports:
+      - "8300:80"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost/web/index.php/auth/login"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
