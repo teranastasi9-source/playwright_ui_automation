@@ -2,16 +2,6 @@ import logging
 import os
 from pathlib import Path
 
-import pytest
-from config import (
-    AUTOMATIONTESTING_ALERTS_URL,
-    AUTOMATIONTESTING_CI_BROWSER_LIMITATION_REASON,
-    ORANGEHRM_ADMIN_PASSWORD,
-    ORANGEHRM_ADMIN_USERNAME,
-    ORANGEHRM_LOGIN_URL,
-    ORANGEHRM_NAV_TIMEOUT_MS,
-)
-from helpers import dismiss_cookie_consent_if_present
 from playwright.sync_api import Browser, Page
 
 logger = logging.getLogger(__name__)
@@ -19,18 +9,27 @@ logger = logging.getLogger(__name__)
 RESULTS_DIR = Path(__file__).resolve().parent.parent / "reports" / "test-results"
 
 
-@pytest.mark.no_browsers_in_ci("firefox", "webkit", reason=AUTOMATIONTESTING_CI_BROWSER_LIMITATION_REASON)
-def test_screenshot(page: Page, browser_name: str):
-    """Verify both a viewport screenshot and a full-page screenshot are actually written to disk."""
-    logger.info("Given the Alerts demo page\n\tWhen I take a viewport and a full-page screenshot"
+def test_screenshot(page: Page, browser_name: str, qa_playground_url: str):
+    """
+    Test verifies both a viewport screenshot and a full-page screenshot are actually written
+    to disk.
+
+    Test Steps:
+    1. Navigate to the Alerts page.
+    2. Take a viewport screenshot, saved to a browser/worker-namespaced path.
+    3. Take a full-page screenshot, saved to a different browser/worker-namespaced path.
+
+    Expected results:
+    Both screenshot files exist on disk with non-zero size.
+    """
+    logger.info("Given the Alerts page\n\tWhen I take a viewport and a full-page screenshot"
                 "\n\tThen both image files exist on disk with content\n")
 
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
-    # Launch the browser and navigate to the Alerts demo page
-    page.goto(AUTOMATIONTESTING_ALERTS_URL)
+    # Launch the browser and navigate to the Alerts page
+    page.goto(f"{qa_playground_url}/alerts.html")
     page.wait_for_load_state("load")
-    dismiss_cookie_consent_if_present(page)
 
     # Namespaced by browser + xdist worker: with parallel execution (pytest-xdist, or
     # --browser passed more than once), several of these can run at the same time and would
@@ -49,11 +48,22 @@ def test_screenshot(page: Page, browser_name: str):
     assert full_page_screenshot_path.exists() and full_page_screenshot_path.stat().st_size > 0
 
 
-@pytest.mark.slow
-def test_video_recording_saved_to_disk(browser: Browser):
-    """Verify a login flow recorded on video actually produces a non-empty video file."""
-    logger.info("Given a browser context with video recording enabled\n\tWhen I log in on OrangeHRM"
-                "\n\tThen a video file is saved to disk with content\n")
+def test_video_recording_saved_to_disk(browser: Browser, qa_playground_url: str):
+    """
+    Test verifies a short recorded interaction actually produces a non-empty video file.
+
+    Test Steps:
+    1. Open a new browser context with video recording enabled.
+    2. Navigate to the Playground index and click through to the Alerts page.
+    3. Trigger a plain alert box and accept it.
+    4. Close the context so the video is finalized.
+
+    Expected results:
+    The alert's captured message is "I am an alert box!", and the resulting video file exists
+    on disk with non-zero size.
+    """
+    logger.info("Given a browser context with video recording enabled\n\tWhen I navigate the"
+                " playground and trigger an alert\n\tThen a video file is saved to disk with content\n")
 
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -61,15 +71,21 @@ def test_video_recording_saved_to_disk(browser: Browser):
     context = browser.new_context(record_video_dir=str(RESULTS_DIR))
     page = context.new_page()
 
-    # Launch the browser and navigate to the login page
-    page.goto(ORANGEHRM_LOGIN_URL)
+    # Navigate the playground and trigger an alert, so there's real recorded interaction
+    page.goto(f"{qa_playground_url}/index.html")
+    page.wait_for_load_state("load")
+    page.get_by_role("link", name="Alerts").click()
     page.wait_for_load_state("load")
 
-    # Fill in the login form
-    page.get_by_placeholder("Username").fill(ORANGEHRM_ADMIN_USERNAME)
-    page.get_by_placeholder("Password").fill(ORANGEHRM_ADMIN_PASSWORD)
-    page.get_by_role("button", name="Login").click()
-    page.wait_for_url('**/dashboard/**', timeout=ORANGEHRM_NAV_TIMEOUT_MS)
+    captured_messages = []
+
+    def handle_dialog(dialog):
+        captured_messages.append(dialog.message)
+        dialog.accept()
+
+    page.on("dialog", handle_dialog)
+    page.locator('//div[@id="OKTab"]/button').click()
+    assert captured_messages[0] == "I am an alert box!"
 
     # Get the video
     video = page.video

@@ -84,7 +84,18 @@ def mock_login_outcome_for_flaky_engines(page, browser_name: str, expected_messa
 
 @pytest.mark.smoke
 def test_login_successful(login_page: LoginPage, browser_name: str) -> None:
-    """Verify a user can log in with valid credentials and reach the secure area."""
+    """
+    Test verifies a user can log in with valid credentials and reach the secure area.
+
+    Test Steps:
+    1. Navigate to the login page.
+    2. Log in with the valid configured username and password.
+    3. Click the Logout button.
+
+    Expected results:
+    The login page loads first. After logging in, the user is redirected to /secure with the
+    "You logged into a secure area!" message and title, and a Logout button is displayed.
+    """
     logger.info("Given valid credentials\n\tWhen I log in\n\tThen I am redirected to the secure area\n")
 
     # Launch the browser and navigate to the login page URL
@@ -109,7 +120,18 @@ def test_login_successful(login_page: LoginPage, browser_name: str) -> None:
 
 
 def test_login_invalid_username(login_page: LoginPage, browser_name: str) -> None:
-    """Verify logging in with an invalid username shows the real error message and keeps the user on /login."""
+    """
+    Test verifies logging in with an invalid username shows the real error message and keeps
+    the user on /login.
+
+    Test Steps:
+    1. Navigate to the login page.
+    2. Log in with an invalid username and the valid configured password.
+
+    Expected results:
+    The "Your password is invalid!" message is shown, and the user remains on the login page
+    (not redirected to /secure).
+    """
     logger.info("Given the login page\n\tWhen I log in with an invalid username and valid password"
                 "\n\tThen an error message is shown and I remain on the login page\n")
 
@@ -132,7 +154,18 @@ def test_login_invalid_username(login_page: LoginPage, browser_name: str) -> Non
 
 
 def test_login_invalid_password(login_page: LoginPage, browser_name: str) -> None:
-    """Verify logging in with an invalid password shows the real error message and keeps the user on /login."""
+    """
+    Test verifies logging in with an invalid password shows the real error message and keeps
+    the user on /login.
+
+    Test Steps:
+    1. Navigate to the login page.
+    2. Log in with the valid configured username and an invalid password.
+
+    Expected results:
+    The "Your password is invalid!" message is shown, and the user remains on the login page
+    (not redirected to /secure).
+    """
     logger.info("Given the login page\n\tWhen I log in with a valid username and invalid password"
                 "\n\tThen an error message is shown and I remain on the login page\n")
 
@@ -158,7 +191,19 @@ def test_login_invalid_password(login_page: LoginPage, browser_name: str) -> Non
 def test_login_with_various_credentials(
     login_page: LoginPage, browser_name: str, username, password, expected_message
 ) -> None:
-    """Verify each username/password combination in data.json produces its expected login outcome."""
+    """
+    Test verifies each username/password combination in data.json produces its expected login
+    outcome.
+
+    Test Steps:
+    1. Navigate to the login page.
+    2. Log in with the parametrized username and password.
+    3. If the combination is expected to succeed, click the Logout button.
+
+    Expected results:
+    The message shown matches the expected_message for that specific combination from
+    data.json. Only the valid combination reaches the secure area and shows a Logout button.
+    """
     logger.info(f"Given the login page\n\tWhen I log in with username='{username}'"
                 f"\n\tThen the message '{expected_message}' is displayed\n")
 
