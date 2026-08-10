@@ -10,3 +10,15 @@ select = [
     "B",   # flake8-bugbear (common bug patterns, e.g. bare except)
     "UP",  # pyupgrade (modern Python idioms)
 ]
+
+[tool.coverage.run]
+# Coverage is scoped to the Page Object Model, not the whole tests/ tree: the app under
+# test (OrangeHRM, QA Playground) isn't Python, so there's no Python application code to
+# measure here - the closest equivalent is this suite's own reusable framework code. A POM
+# method never exercised by any test is dead code worth knowing about; coverage of the
+# test_*.py files themselves (of course ~100%, they're what's executing) wouldn't be.
+source = ["tests/pages"]
+omit = ["tests/pages/__init__.py"]
+
+[tool.coverage.report]
+show_missing = true
