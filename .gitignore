@@ -8,6 +8,10 @@ __pycache__/
 # ruff
 .ruff_cache/
 
+# pytest-cov
+.coverage
+coverage.xml
+
 # Downloaded/generated test artifacts (not part of the committed report)
 test_data/test.zip
 test_data/some-file*.txt
