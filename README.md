@@ -1,7 +1,7 @@
 # Playwright UI Test Automation
 
 [![Tests](https://github.com/teranastasi9-source/playwright_ui_automation/actions/workflows/tests.yml/badge.svg)](https://github.com/teranastasi9-source/playwright_ui_automation/actions/workflows/tests.yml)
-![Tests](https://img.shields.io/badge/tests-40-brightgreen)
+![Tests](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/teranastasi9-source/playwright_ui_automation/main/.github/badges/tests.json)
 [![codecov](https://codecov.io/gh/teranastasi9-source/playwright_ui_automation/graph/badge.svg)](https://codecov.io/gh/teranastasi9-source/playwright_ui_automation)
 
 Purpose: Python-based UI test automation framework built with [Playwright](https://playwright.dev/python/) and [pytest](https://docs.pytest.org/). Portfolio demonstration of UI automation, Page Object Model, and pytest best practices.
@@ -297,8 +297,10 @@ it fails - the same rule CI enforces, just caught locally before it's pushed.
 
 ## Coverage
 
-The two badges above answer different questions: `tests-40` is the count of test functions in
-the suite (kept in sync by hand - see "Test scenarios overview"), while the Codecov badge
+The two badges above answer different questions: the `tests` badge is the count of test
+functions in the suite, updated automatically by CI itself (`.github/badges/tests.json`, read
+via a shields.io [endpoint badge](https://shields.io/badges/endpoint-badge) - no more manual
+edits to keep it accurate), while the Codecov badge
 measures [`pytest-cov`](https://pytest-cov.readthedocs.io/) coverage of `tests/pages/` - the
 Page Object Model - not of the application under test. OrangeHRM and
 QA Playground aren't Python, so there's no app code for `coverage.py` to instrument; the
