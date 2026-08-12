@@ -48,7 +48,14 @@ jobs:
         # entirely; only a push straight to main updates the badge shown to visitors.
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
-          COUNT=$(pytest --collect-only -q tests | tail -1 | grep -oE '^[0-9]+')
+          # -o addopts="" strips pytest.ini's own addopts for this one invocation, and counting
+          # "::" node-id lines directly (rather than parsing the trailing summary line) avoids
+          # a real bug found 2026-08-12 in the restful_booker_automation sibling: pytest pads
+          # that summary line with "=" to the detected terminal width ("=== N tests collected
+          # ==="), which silently broke a naive `tail -1 | grep -oE '^[0-9]+'` the moment the
+          # real GitHub Actions runner's terminal-width detection differed from what was
+          # tested locally.
+          COUNT=$(pytest --collect-only -q -o addopts="" tests | grep -c "::")
           mkdir -p .github/badges
           echo "{\"schemaVersion\":1,\"label\":\"tests\",\"message\":\"$COUNT\",\"color\":\"brightgreen\"}" > .github/badges/tests.json
           if ! git diff --quiet -- .github/badges/tests.json; then
