@@ -6,9 +6,12 @@
 
 Purpose: Python-based UI test automation framework built with [Playwright](https://playwright.dev/python/) and [pytest](https://docs.pytest.org/). Portfolio demonstration of UI automation, Page Object Model, and pytest best practices.
 
-![CRUD test in action: creating, verifying, and deleting a Job Title on OrangeHRM](docs/job_titles_crud_demo.gif)
-<sub>`test_job_title_create_and_delete` running headless, recorded at 10fps - creates a
-uniquely-named Job Title, verifies it renders correctly, then deletes it again.</sub>
+![Multi-actor lifecycle test in action: Admin configures leave, a newly onboarded employee applies for it on their own login, and the application shows up in their own leave list](docs/leave_apply_demo.gif)
+<sub>`test_new_employee_applies_for_leave` running against the self-hosted OrangeHRM instance,
+recorded at 10fps with `--slowmo=250` for watchability - Admin defines a leave period and type,
+onboards a new employee with their own ESS login, grants them an entitlement, then that same
+employee logs in on their own credentials and applies for leave, with the result verified from
+their own leave list before the account is cleaned up.</sub>
 
 ## Project Overview
 
@@ -77,7 +80,7 @@ playwright_ui_automation/
   requirements-dev.txt              - + ruff and pre-commit, for linting
   pyproject.toml                     - ruff config
   docs/architecture.png            - diagram above (tests -> fixtures -> Page Objects -> targets, + CI)
-  docs/job_titles_crud_demo.gif    - CRUD test recording embedded at the top of this README
+  docs/leave_apply_demo.gif        - multi-actor lifecycle recording embedded at the top of this README
   docs/report_screenshot.png       - report screenshot embedded below, for a no-clone preview
   docs/github_actions.png          - CI run screenshot, embedded in "Cross-browser testing" below
   test_data/                          - JSON/CSV fixtures, sample upload file, local iframe fixture
