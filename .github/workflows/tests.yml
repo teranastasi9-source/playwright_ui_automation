@@ -134,10 +134,11 @@ jobs:
       - run: playwright install --with-deps ${{ matrix.browser }}
       - name: Run the full suite
         run: |
-          # The expandtesting.com login tests aren't excluded here: they carry
-          # @pytest.mark.no_browsers("firefox", "webkit", reason=...) and are skipped
-          # automatically on those engines by conftest.py's pytest_runtest_setup - see
-          # "Cross-browser testing" in README.md for the verified root cause.
+          # The expandtesting.com login tests aren't excluded here: on Firefox/WebKit they run
+          # via mock_login_outcome_for_flaky_engines (test_login.py), which mocks the outcome
+          # instead of skipping the test outright - a replacement for an earlier
+          # @pytest.mark.no_browsers skip. See "Cross-browser testing" in README.md for the
+          # verified root cause.
           #
           # --reruns 1: this job's schedule trigger exists specifically to tolerate drift
           # from the one third-party demo site (expandtesting.com) this suite still depends
