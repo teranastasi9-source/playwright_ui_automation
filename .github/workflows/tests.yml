@@ -105,10 +105,10 @@ jobs:
       - uses: actions/checkout@v4
       - name: Start self-hosted OrangeHRM
         # test_job_titles.py, test_session_reuse.py, test_find_locators_css_xpath.py's
-        # attribute/xpath tests, and test_employee_lifecycle.py run against this instead of the
-        # shared public demo - see "Self-hosted OrangeHRM" in README.md for why. Same compose
-        # file used locally (docker-compose.orangehrm.yml), so there's one definition of this
-        # setup, not two.
+        # attribute/xpath tests, test_employee_lifecycle.py, and test_accessibility.py run
+        # against this instead of the shared public demo - see "Self-hosted OrangeHRM" in
+        # README.md for why. Same compose file used locally (docker-compose.orangehrm.yml),
+        # so there's one definition of this setup, not two.
         run: docker compose -f docker-compose.orangehrm.yml up -d --build
       - name: Wait for OrangeHRM to finish installing
         # No native `services:` support for a custom-built image (it only pulls pre-built

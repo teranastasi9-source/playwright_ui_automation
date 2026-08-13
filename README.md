@@ -127,8 +127,9 @@ playwright_ui_automation/
 ## Prerequisites
 - Python 3.11+ installed
 - Docker, for the self-hosted OrangeHRM instance `test_job_titles.py`, `test_session_reuse.py`,
-  `test_employee_lifecycle.py`, and two of `test_find_locators_css_xpath.py`'s tests need (see
-  "Self-hosted OrangeHRM" below) - not required for the rest of the suite
+  `test_employee_lifecycle.py`, `test_accessibility.py`, and two of
+  `test_find_locators_css_xpath.py`'s tests need (see "Self-hosted OrangeHRM" below) - not
+  required for the rest of the suite
 
 ## Test execution
 
@@ -235,7 +236,9 @@ The other three aren't for browsing subsets - each drives its own behavior inste
 - `flaky` - opt-in reruns for a test with a known external timing flake. Not currently
   applied to any test; see "Flaky test policy" below for why.
 - `no_browsers` - skips a test on specific browser engines with a known, understood
-  per-engine limitation, on CI and locally alike; see "Cross-browser testing" below.
+  per-engine limitation, on CI and locally alike; see "Cross-browser testing" below. Not
+  currently applied to any test (the login tests that used to need it now use a mocked-outcome
+  approach instead - see "Cross-browser testing" for why).
 - `no_browsers_in_ci` - same idea, but only skips when the `CI` env var is `"true"` - for a
   site that works fine on those browsers locally, just not from GitHub Actions' datacenter
   IPs. Not currently applied to any test (the site that originally needed it was replaced by
@@ -533,10 +536,11 @@ automation around it, not front-end development itself.
 
 ## Self-hosted OrangeHRM
 
-`test_job_titles.py`, `test_session_reuse.py`, `test_employee_lifecycle.py`, and two of
-`test_find_locators_css_xpath.py`'s tests need a real, complex, multi-page application - CRUD,
-session reuse, locator-strategy, and multi-actor lifecycle tests all get more value from
-exercising a real app's markup than a page built for the test (unlike the QA Playground's
+`test_job_titles.py`, `test_session_reuse.py`, `test_employee_lifecycle.py`,
+`test_accessibility.py`, and two of `test_find_locators_css_xpath.py`'s tests need a real,
+complex, multi-page application - CRUD, session reuse, locator-strategy, multi-actor lifecycle,
+and accessibility tests all get more value from exercising a real app's markup than a page
+built for the test (unlike the QA Playground's
 generic UI-pattern tests above). This suite used to point them at the shared public
 `opensource-demo.orangehrmlive.com` instead, but that came with real, verified costs: other
 visitors editing the shared Job Titles list, the demo's own occasional slowness triggering
@@ -616,7 +620,7 @@ Issue: A UI test fails against a third-party demo site
      control. Re-run the test; if it persists, check whether the demo site itself is down.
 
 Issue: `test_job_titles.py`/`test_session_reuse.py`/`test_employee_lifecycle.py`/
-`test_find_locators_css_xpath.py` fail with a connection error
+`test_accessibility.py`/`test_find_locators_css_xpath.py` fail with a connection error
   -> Self-hosted OrangeHRM isn't running (or isn't finished installing yet) - see "Self-hosted
      OrangeHRM" above. Run `docker compose -f docker-compose.orangehrm.yml up -d --build` and
      wait for `docker inspect --format='{{.State.Health.Status}}' <container>` to report
