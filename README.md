@@ -615,8 +615,8 @@ Issue: A UI test fails against a third-party demo site
   -> See "Third-party demo site still used" above - some failures are outside this project's
      control. Re-run the test; if it persists, check whether the demo site itself is down.
 
-Issue: `test_job_titles.py`/`test_session_reuse.py`/`test_find_locators_css_xpath.py` fail
-with a connection error
+Issue: `test_job_titles.py`/`test_session_reuse.py`/`test_employee_lifecycle.py`/
+`test_find_locators_css_xpath.py` fail with a connection error
   -> Self-hosted OrangeHRM isn't running (or isn't finished installing yet) - see "Self-hosted
      OrangeHRM" above. Run `docker compose -f docker-compose.orangehrm.yml up -d --build` and
      wait for `docker inspect --format='{{.State.Health.Status}}' <container>` to report
