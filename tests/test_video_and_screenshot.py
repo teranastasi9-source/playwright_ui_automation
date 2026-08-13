@@ -2,6 +2,7 @@ import logging
 import os
 from pathlib import Path
 
+import pytest
 from playwright.sync_api import Browser, Page
 
 logger = logging.getLogger(__name__)
@@ -48,6 +49,7 @@ def test_screenshot(page: Page, browser_name: str, qa_playground_url: str):
     assert full_page_screenshot_path.exists() and full_page_screenshot_path.stat().st_size > 0
 
 
+@pytest.mark.slow
 def test_video_recording_saved_to_disk(browser: Browser, qa_playground_url: str):
     """
     Test verifies a short recorded interaction actually produces a non-empty video file.
