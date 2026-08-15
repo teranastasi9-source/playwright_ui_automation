@@ -1,7 +1,7 @@
-# Self-hosted OrangeHRM used by test_job_titles.py, test_session_reuse.py, and
-# test_find_locators_css_xpath.py's attribute/xpath tests, instead of the shared
-# public opensource-demo.orangehrmlive.com instance. See README's "Self-hosted
-# OrangeHRM" section for why.
+# Self-hosted OrangeHRM used by test_job_titles.py, test_session_reuse.py,
+# test_find_locators_css_xpath.py's attribute/xpath tests, test_employee_lifecycle.py, and
+# test_accessibility.py, instead of the shared public opensource-demo.orangehrmlive.com
+# instance. See README's "Self-hosted OrangeHRM" section for why.
 #
 # Deliberately no persisted volumes: every `docker compose up` re-runs OrangeHRM's
 # own unattended installer against a fresh, empty database (see orangehrm/entrypoint.sh).
