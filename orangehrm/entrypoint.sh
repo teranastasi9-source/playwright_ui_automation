@@ -43,9 +43,10 @@ if [ ! -f "$CONF_FILE" ]; then
     cd /var/www/html
     # Answer order/count must match InstallOnNewDatabaseCommand's exact prompt sequence
     # (verified by reading installer/Command/InstallOnNewDatabaseCommand.php in the image -
-    # it has no --no-interaction support, so this is the only scriptable path). The two
-    # blank lines are Language/Timezone Group, which the command accepts empty; Timezone
-    # itself does not, hence the explicit "UTC".
+    # it has no --no-interaction support, so this is the only scriptable path). Three blank
+    # lines total: the first two are Language/Timezone Group, which the command accepts
+    # empty (Timezone itself does not, hence the explicit "UTC" after them); the third,
+    # right after ${ADMIN_EMAIL}, answers a separate optional prompt in the Admin User step.
     php installer/console install:on-new-database -v <<ANSWERS
 yes
 ${DB_HOST_NAME}
